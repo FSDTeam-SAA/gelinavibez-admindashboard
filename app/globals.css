@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+
+
+/* app/globals.css */
+
+:root {
+  --font-lato: 'Lato', sans-serif;
+  --font-playfair: 'Playfair Display SC', serif;
+  --font-poppins: 'Poppins', sans-serif;
+}
+
+body {
+  font-family: var(--font-lato);
+}
+
+/* h1 uses Playfair Display SC */
+h1 {
+  font-family: var(--font-playfair);
+}
+
+/* h3 uses Poppins */
+h3 {
+  font-family: var(--font-poppins);
+}
