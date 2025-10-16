@@ -32,27 +32,30 @@ export function Sidebar({ isMobileMenuOpen = false, onClose }: SidebarProps) {
     }
   }, [isMobileMenuOpen])
 
-  const renderLinks = () =>
-    navigation.map((item) => {
-      const isActive =
-        pathname === item.href ||
-        (item.href === "/settings" && (pathname === "/settings" || pathname === "/change-password"))
+ const renderLinks = () =>
+  navigation.map((item) => {
+    const isActive =
+      pathname === item.href ||
+      (item.href === "/settings" && pathname.startsWith("/settings")); // ✅ change here
 
-      return (
-        <Link
-          key={item.name}
-          href={item.href}
-          onClick={onClose}
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 text-[18px] font-normal rounded-lg transition-colors w-full text-nowrap",
-            isActive ? "bg-[#0F3D6133]/20 text-[#0F3D61]" : "text-[#0F3D61] hover:bg-[#0F3D6133]/20",
-          )}
-        >
-          <item.icon className="w-5 h-5" />
-          <span className="flex-1">{item.name}</span>
-        </Link>
-      )
-    })
+    return (
+      <Link
+        key={item.name}
+        href={item.href}
+        onClick={onClose}
+        className={cn(
+          "flex items-center gap-3 px-4 py-3 text-[18px] font-normal rounded-lg transition-colors w-full text-nowrap",
+          isActive
+            ? "bg-[#0F3D6133]/20 text-[#0F3D61]"
+            : "text-[#0F3D61] hover:bg-[#0F3D6133]/20",
+        )}
+      >
+        <item.icon className="w-5 h-5" />
+        <span className="flex-1">{item.name}</span>
+      </Link>
+    )
+  })
+
 
   return (
     <>
