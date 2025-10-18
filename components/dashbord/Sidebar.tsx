@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Settings, LogOut, X, LayoutDashboard, FileText, Home, Award, CreditCard, Users } from "lucide-react"
+import { Settings, LogOut, X, LayoutDashboard, FileText, Home, Award, CreditCard, Users,ContactRound  } from "lucide-react"
 import { cn } from "@/lib/utils"
 import React from "react"
 import Image from "next/image"
@@ -10,8 +10,9 @@ import Image from "next/image"
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Tenant Applications Management", href: "/tenant-applications", icon: FileText },
+  { name: "Extermination Applications", href: "/extermination-applications", icon: Award },
   { name: "Apartment Listings Management", href: "/apartment-listings", icon: Home },
-  { name: "Distinguished Experts", href: "/distinguished-experts", icon: Award },
+  { name: "Contactors", href: "/contactors", icon: ContactRound  },
   { name: "Payments", href: "/payments", icon: CreditCard },
   { name: "Contacts", href: "/contacts", icon: Users },
   { name: "Settings", href: "/settings", icon: Settings },
@@ -36,7 +37,7 @@ export function Sidebar({ isMobileMenuOpen = false, onClose }: SidebarProps) {
   navigation.map((item) => {
     const isActive =
       pathname === item.href ||
-      (item.href === "/settings" && pathname.startsWith("/settings")); // ✅ change here
+      (item.href === "/settings" && pathname.startsWith("/settings")); 
 
     return (
       <Link
