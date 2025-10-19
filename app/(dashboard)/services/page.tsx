@@ -1,10 +1,10 @@
 import React from 'react'
-import { ExterminationPage } from './_components/ExterminationPage'
+import { ServicesPage } from './_components/ServicePage'
 
 const page = () => {
   return (
     <div>
-     <ExterminationPage/>
+      <ServicesPage/>
     </div>
   )
 }

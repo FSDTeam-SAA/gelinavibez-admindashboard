@@ -1,3 +1,4 @@
+
 import { EarningsChart } from "@/components/dashbord/Eamings-chart";
 import { RecentBookings } from "@/components/dashbord/Recent-bookings";
 import { RecentCustomers } from "@/components/dashbord/Recent-customers";
@@ -6,6 +7,7 @@ import { Header } from "@/components/Shared/Header";
 
 
 export default function DashboardPage() {
+
   return (
     <section>
       <Header tittle="Dashboard" />

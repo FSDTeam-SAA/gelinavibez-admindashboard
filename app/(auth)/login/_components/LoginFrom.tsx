@@ -1,9 +1,11 @@
+
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,17 +17,86 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+
+  // ✅ Show NextAuth error (like non-admin user)
+  useEffect(() => {
+    if (error === "CredentialsSignin") {
+      toast.error("Invalid credentials or access denied (Admins only) ❌");
+    }
+  }, [error]);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("savedEmail");
+    const savedPassword = localStorage.getItem("savedPassword");
+    if (savedEmail && savedPassword) {
+      setEmail(savedEmail);
+      setPassword(savedPassword);
+      setRememberMe(true);
+    }
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle sign in logic
-    console.log({ email, password, rememberMe });
+
+    if (!email.trim()) {
+      toast.error("Email is required");
+      return;
+    }
+    if (!password.trim()) {
+      toast.error("Password is required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await signIn("credentials", {
+        redirect: false, // manual redirect control
+        email,
+        password,
+        callbackUrl: "/", // redirect after successful login
+      });
+
+      if (res?.error) {
+        // ❌ Handle wrong credentials or non-admin user
+        if (res.error.includes("admin")) {
+          toast.error("Only admin users can log in ❌");
+        } else {
+          toast.error("Invalid email or password ❌");
+        }
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Remember me
+      if (rememberMe) {
+        localStorage.setItem("savedEmail", email);
+        localStorage.setItem("savedPassword", password);
+      } else {
+        localStorage.removeItem("savedEmail");
+        localStorage.removeItem("savedPassword");
+      }
+
+      toast.success("Login successful 🎉");
+      setTimeout(() => {
+        router.push("/");
+      }, 800);
+    } catch (err) {
+      toast.error("Something went wrong. Please try again." + err);
+    } finally {
+      setLoading(false);  
+    }
   };
 
   return (
     <AuthLayout>
-      <div className="space-y-6 ">
-        <div className="">
+      <div className="space-y-6">
+        <div>
           <h1 className="text-4xl font-serif text-[#0F3D61]">Hello!</h1>
           <p className="text-base text-[#6C757D]">
             Access to manage your account
@@ -78,7 +149,7 @@ export default function LoginForm() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between space-y-6">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="remember"
@@ -103,19 +174,13 @@ export default function LoginForm() {
           <div className="pt-6">
             <Button
               type="submit"
-              className="w-full bg-[#0F3D61] hover:bg-[#0F3D61]/90 text-white rounded-full font-bold py-6 text-base "
+              disabled={loading}
+              className="w-full bg-[#0F3D61] hover:bg-[#0F3D61]/90 text-white rounded-full font-bold py-6 text-base"
             >
-              Sign In
+              {loading ? "Logging in..." : "Sign In"}
             </Button>
           </div>
         </form>
-
-        {/* <p className="text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <Link href="/sign-up" className="text-[#0a3d62] font-medium hover:underline">
-            Sign Up
-          </Link>
-        </p> */}
       </div>
     </AuthLayout>
   );

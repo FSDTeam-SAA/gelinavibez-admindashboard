@@ -1,24 +1,62 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
+import React, { useState } from "react"
+import { useMutation } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AuthLayout } from "@/components/Shared/AuthLayout"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation" // ✅ Correct import
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
+  const router = useRouter()
+
+  const forgotPassword = async (email: string) => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    })
+
+    if (!response.ok) {
+      throw new Error("Failed to send OTP")
+    }
+
+    return response.json()
+  }
+
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return re.test(email)
+  }
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: forgotPassword,
+    onSuccess: () => {
+      toast.success("OTP sent successfully to your email")
+      setEmail("")
+      router.push("/verify-email")
+    },
+    onError: (error) => {
+      toast.error(error.message || "Something went wrong")
+    },
+  })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle send OTP logic
-    console.log({ email })
+
+    if (!validateEmail(email)) {
+      toast.error("Please enter a valid email address")
+      return
+    }
+
+    mutate(email)
   }
 
   return (
     <AuthLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div>
           <h1 className="text-4xl font-serif text-[#0F3D61]">Forgot Password!</h1>
           <p className="text-base text-[#6C757D]">
@@ -26,7 +64,6 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label
@@ -48,9 +85,10 @@ export default function ForgotPasswordPage() {
 
           <Button
             type="submit"
-            className="w-full bg-[#0F3D61] hover:bg-[#0F3D61]/90 text-white rounded-full font-bold py-6 text-base"
+            disabled={isPending}
+            className="w-full bg-[#0F3D61] hover:bg-[#0F3D61]/90 text-white rounded-full font-bold py-6 text-base disabled:opacity-50"
           >
-            Send OTP
+            {isPending ? "Sending..." : "Send OTP"}
           </Button>
         </form>
       </div>
