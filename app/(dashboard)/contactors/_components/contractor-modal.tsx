@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { X,  Image } from "lucide-react"
+import { X,   FileImage } from "lucide-react"
 
 interface ContractorModalProps {
   isOpen: boolean
@@ -212,7 +212,7 @@ export function ContractorModal({ isOpen, onClose }: ContractorModalProps) {
                 </div>
               ) : (
                 <>
-                  <Image className="h-[100px] w-[100px] text-muted-foreground mb-2" />
+                  <FileImage  className="h-[100px] w-[100px] text-muted-foreground mb-2" />
                   <p className="text-sm text-muted-foreground">Click to upload or drag and drop</p>
                 </>
               )}

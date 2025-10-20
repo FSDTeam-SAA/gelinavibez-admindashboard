@@ -2,24 +2,63 @@
 
 import type React from "react"
 import { useState } from "react"
+import { useMutation } from "@tanstack/react-query"
+import { useRouter, useSearchParams } from "next/navigation"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Eye, EyeOff } from "lucide-react"
 import { AuthLayout } from "@/components/Shared/AuthLayout"
 
+async function resetPassword(data: { email: string; newPassword: string }) {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
+  
+  if (!response.ok) {
+    throw new Error("Failed to reset password")
+  }
+  
+  return response.json()
+}
+
 export default function ChangePasswordPage() {
+  const searchParams = useSearchParams()
+  const email = searchParams.get("email") || ""
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const router = useRouter();
+
+  const mutation = useMutation({
+    mutationFn: resetPassword,
+    onSuccess: () => {
+      toast.success("Password reset successfully!")
+      setNewPassword("")
+      setConfirmPassword("")
+      router.push("/login")
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to reset password")
+    },
+  })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (newPassword !== confirmPassword) {
-      alert("Passwords do not match")
+      toast.error("Passwords do not match")
       return
     }
-    console.log({ newPassword })
+    if (!email) {
+      toast.error("Email is required")
+      return
+    }
+    mutation.mutate({ email, newPassword })
   }
 
   return (
@@ -27,7 +66,7 @@ export default function ChangePasswordPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-4xl font-serif text-[#0F3D61]">Change Password</h1>
+          <h1 className="text-4xl font-serif text-[#0F3D61]">Reset Password</h1>
           <p className="text-base text-[#6C757D]">
             Enter and confirm your new password
           </p>
@@ -41,7 +80,7 @@ export default function ChangePasswordPage() {
               htmlFor="new-password"
               className="text-base font-medium text-[#0F3D61]"
             >
-              Create New Password <span className="text-[#0F3D61]">*</span>
+              New Password <span className="text-[#0F3D61]">*</span>
             </label>
             <div className="relative">
               <Input
@@ -95,8 +134,9 @@ export default function ChangePasswordPage() {
           <Button
             type="submit"
             className="w-full bg-[#0F3D61] hover:bg-[#0F3D61]/90 text-white rounded-full font-bold py-6 text-base"
+            disabled={mutation.isPending}
           >
-            Change Password
+            {mutation.isPending ? "Resetting..." : "Reset Password"}
           </Button>
         </form>
       </div>
