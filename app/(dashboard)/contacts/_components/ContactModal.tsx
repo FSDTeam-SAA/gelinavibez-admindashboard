@@ -1,60 +1,82 @@
 "use client"
 
-import { X } from "lucide-react"
-
-interface Contact {
-  id: number
-  name: string
-  email: string
-  phone: string
-  message: string
-  date: string
-  status: string
-}
+import { useGetSingelContact } from "@/hooks/ApiClling"
+import { useSession } from "next-auth/react"
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog"
 
 interface ContactModalProps {
-  contact: Contact | null
+  contact: string | null
   isOpen: boolean
   onClose: () => void
 }
 
-
 export function ContactModal({ contact, isOpen, onClose }: ContactModalProps) {
-  if (!isOpen || !contact) return null
+  const { data: session } = useSession()
+  const token = session?.accessToken || ""
+
+  // Fetch single contact only when modal is open & ID exists
+  const { data, isLoading } = useGetSingelContact(token, contact as string)
+
+  const contactData = data?.data
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="relative w-full max-w-md bg-white rounded-lg bg-card p-6 shadow-lg">
-        {/* Close Button */}
-        <button onClick={onClose} className="absolute right-4 top-4 text-muted-foreground hover:text-[#343A40]">
-          <X className="h-5 w-5" />
-        </button>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md bg-white">
+        {/* <DialogHeader>
+          <DialogTitle>Contact Details</DialogTitle>
+          <DialogDescription>
+            View all information submitted by the contact.
+          </DialogDescription>
+        </DialogHeader> */}
 
-        {/* Content */}
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-[#343A40]">Name</label>
-            <p className="mt-1 text-sm text-[#343A40]">{contact.name}</p>
+        {isLoading ? (
+          <div className="py-10 text-center text-gray-600">Loading contact...</div>
+        ) : contactData ? (
+          <div className="space-y-4 mt-4">
+            <div>
+              <label className="text-sm font-medium text-[#343A40]">Name</label>
+              <p className="mt-1 text-sm text-[#343A40]">
+                {contactData.firstName} {contactData.lastName}
+              </p>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-[#343A40]">
+                Email Address
+              </label>
+              <p className="mt-1 text-sm text-[#343A40]">{contactData.email}</p>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-[#343A40]">
+                Phone Number
+              </label>
+              <p className="mt-1 text-sm text-[#343A40]">{contactData.phone}</p>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-[#343A40]">Message</label>
+              <p className="mt-2 text-sm text-[#343A40] leading-relaxed">
+                {contactData.message}
+              </p>
+            </div>
+
+            {/* <div>
+              <label className="text-sm font-medium text-[#343A40]">Created At</label>
+              <p className="mt-1 text-sm text-[#343A40]">
+                {new Date(contactData.createdAt).toLocaleString()}
+              </p>
+            </div> */}
           </div>
-
-          <div>
-            <label className="text-sm font-medium text-[#343A40]">Email Address</label>
-            <p className="mt-1 text-sm text-[#343A40]">{contact.email}</p>
+        ) : (
+          <div className="py-10 text-center text-gray-600">
+            No contact details found.
           </div>
-
-          <div>
-            <label className="text-sm font-medium text-[#343A40]">Phone Number</label>
-            <p className="mt-1 text-sm text-[#343A40]">{contact.phone}</p>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-[#343A40]">Message</label>
-            <p className="mt-2 text-sm text-[#343A40] leading-relaxed">{contact.message}</p>
-          </div>
-        </div>
-
-    
-      </div>
-    </div>
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }

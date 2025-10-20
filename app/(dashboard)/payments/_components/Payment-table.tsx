@@ -2,84 +2,31 @@
 
 import { CustomPagination } from "@/components/Shared/CustomePaginaion"
 import { Header } from "@/components/Shared/Header"
+import { useGetPayment } from "@/hooks/ApiClling"
+import { useSession } from "next-auth/react"
 import Image from "next/image"
 import { useState } from "react"
 
-interface Payment {
-  id: number
-  name: string
-  email: string
-  amount: string
-  date: string
-}
-
-const mockPayments: Payment[] = [
-  {
-    id: 1,
-    name: "David Juoal",
-    email: "example@example.com",
-    amount: "$20",
-    date: "06/01/2025",
-  },
-  {
-    id: 2,
-    name: "David Juoal",
-    email: "example@example.com",
-    amount: "$20",
-    date: "06/01/2025",
-  },
-  {
-    id: 3,
-    name: "David Juoal",
-    email: "example@example.com",
-    amount: "$20",
-    date: "06/01/2025",
-  },
-  {
-    id: 4,
-    name: "David Juoal",
-    email: "example@example.com",
-    amount: "$20",
-    date: "06/01/2025",
-  },
-  {
-    id: 5,
-    name: "David Juoal",
-    email: "example@example.com",
-    amount: "$20",
-    date: "06/01/2025",
-  },
-  {
-    id: 6,
-    name: "David Juoal",
-    email: "example@example.com",
-    amount: "$20",
-    date: "06/01/2025",
-  },
-  {
-    id: 7,
-    name: "David Juoal",
-    email: "example@example.com",
-    amount: "$20",
-    date: "06/01/2025",
-  },
-  {
-    id: 8,
-    name: "David Juoal",
-    email: "example@example.com",
-    amount: "$20",
-    date: "06/01/2025",
-  },
-]
-
 export default function PaymentPage() {
-    const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 5
-    const totalItems = mockPayments.length
+  const { data: session } = useSession()
+  const token = session?.accessToken || ""
+  console.log(token)
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+  const getData = useGetPayment(token, currentPage, itemsPerPage)
+
+  if (getData.isLoading) {
+    return <div className="p-10 text-center text-lg">Loading...</div>
+  }
+
+  const mockPayments = getData.data?.data || []
+  const totalItems = getData.data?.meta?.total || 0
+
   return (
     <div className="min-h-screen ">
-        {/* Header */}
-        <Header tittle="Payments" />
+      {/* Header */}
+      <Header tittle="Payments" />
       <div className="pr-5">
 
         {/* Table */}
@@ -94,18 +41,24 @@ export default function PaymentPage() {
             </thead>
             <tbody>
               {mockPayments.map((payment) => (
-                <tr key={payment.id} className="border-b border-[#E6E7E6] ">
+                <tr key={payment._id} className="border-b border-[#E6E7E6] ">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <Image src="/diverse-avatars.png" alt={payment.name} width={100} height={100} className="h-8 w-8 rounded-full" />
+                      <Image src={payment?.user?.profileImage} alt={payment?.user?.firstName} width={100} height={100} className="h-8 w-8 rounded-full" />
                       <div>
-                        <p className="text-base font-medium text-[#343A40]">{payment.name}</p>
-                        <p className="text-xs text-[#68706A]">{payment.email}</p>
+                        <p className="text-base font-medium text-[#343A40]">{payment?.user?.firstName}</p>
+                        <p className="text-xs text-[#68706A]">{payment?.user?.email}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-base font-medium text-[#343A40]">{payment.amount}</td>
-                  <td className="px-6 py-4 text-base text-[#68706A] text-center">{payment.date}</td>
+                  <td className="px-6 py-4 text-base text-[#68706A] text-center">
+                    {new Date(payment.createdAt).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -113,14 +66,14 @@ export default function PaymentPage() {
         </div>
 
         {/* Pagination */}
-          <div className="w-full ">
-                <CustomPagination
-                  totalItems={totalItems}
-                  itemsPerPage={itemsPerPage}
-                  currentPage={currentPage}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
+        <div className="w-full ">
+          <CustomPagination
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
+        </div>
       </div>
     </div>
   )
