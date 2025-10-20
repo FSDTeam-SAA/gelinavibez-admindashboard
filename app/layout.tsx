@@ -1,7 +1,9 @@
-
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { Lato, Playfair_Display_SC, Poppins } from "next/font/google";
-import NextTopLoader from 'nextjs-toploader'
+import NextTopLoader from "nextjs-toploader";
+import ReactQueryProvider from "@/components/provider/ReactQueryProvider";
+import { SessionProvider } from "@/components/provider/SessionProvider";
 
 const lato = Lato({
   subsets: ["latin"],
@@ -19,7 +21,7 @@ const playfair = Playfair_Display_SC({
 
 const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["400","500", "600","700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
   variable: "--font-poppins",
 });
@@ -32,17 +34,33 @@ export const metadata = {
   },
 };
 
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="en"
       className={`${lato.variable} ${playfair.variable} ${poppins.variable}`}
     >
       <body className={lato.className}>
-          <NextTopLoader color="#0070f3" height={3}   showSpinner={false} />
-        {children}
-        </body>
+        <NextTopLoader color="#0070f3" height={3} showSpinner={false} />
+        <ReactQueryProvider>
+          <SessionProvider>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: "#0F3D61",
+                color: "white",
+              },
+            }}
+          />
+          {children}
+          </SessionProvider>
+        </ReactQueryProvider>
+      </body>
     </html>
   );
 }
