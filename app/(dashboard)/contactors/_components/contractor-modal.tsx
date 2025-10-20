@@ -212,7 +212,7 @@ export function ContractorModal({ isOpen, onClose }: ContractorModalProps) {
                 </div>
               ) : (
                 <>
-                  <Image className="h-[100px] w-[100px] text-muted-foreground mb-2" />
+                  <Image   className="h-[100px] w-[100px] text-muted-foreground mb-2" />
                   <p className="text-sm text-muted-foreground">Click to upload or drag and drop</p>
                 </>
               )}
