@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AuthLayout } from "@/components/Shared/AuthLayout"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation" // ✅ Correct import
+import { useRouter } from "next/navigation" 
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
     onSuccess: () => {
       toast.success("OTP sent successfully to your email")
       setEmail("")
-      router.push("/verify-email")
+     router.push(`/verify-email?email=${encodeURIComponent(email)}`)
     },
     onError: (error) => {
       toast.error(error.message || "Something went wrong")

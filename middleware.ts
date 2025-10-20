@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
   const publicRoutes = [
     '/login',
     '/forgot-password',
-    '/update-password',
+    '/reset-password',
     '/verify-email',
     '/api/auth',
     '/_next',
