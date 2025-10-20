@@ -1,126 +1,186 @@
+
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-
+import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
-import { AuthLayout } from "@/components/web/AuthLayout";
+import { AuthLayout } from "@/components/Shared/AuthLayout";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+
+  // ✅ Show NextAuth error (like non-admin user)
+  useEffect(() => {
+    if (error === "CredentialsSignin") {
+      toast.error("Invalid credentials or access denied (Admins only) ❌");
+    }
+  }, [error]);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("savedEmail");
+    const savedPassword = localStorage.getItem("savedPassword");
+    if (savedEmail && savedPassword) {
+      setEmail(savedEmail);
+      setPassword(savedPassword);
+      setRememberMe(true);
+    }
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email.trim()) {
+      toast.error("Email is required");
+      return;
+    }
+    if (!password.trim()) {
+      toast.error("Password is required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await signIn("credentials", {
+        redirect: false, // manual redirect control
+        email,
+        password,
+        callbackUrl: "/", // redirect after successful login
+      });
+
+      if (res?.error) {
+        // ❌ Handle wrong credentials or non-admin user
+        if (res.error.includes("admin")) {
+          toast.error("Only admin users can log in ❌");
+        } else {
+          toast.error("Invalid email or password ❌");
+        }
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Remember me
+      if (rememberMe) {
+        localStorage.setItem("savedEmail", email);
+        localStorage.setItem("savedPassword", password);
+      } else {
+        localStorage.removeItem("savedEmail");
+        localStorage.removeItem("savedPassword");
+      }
+
+      toast.success("Login successful 🎉");
+      setTimeout(() => {
+        router.push("/");
+      }, 800);
+    } catch (err) {
+      toast.error("Something went wrong. Please try again." + err);
+    } finally {
+      setLoading(false);  
+    }
+  };
 
   return (
     <AuthLayout>
-      <div className="w-full max-w-[624px]">
-        <div className=" bg-[#FFFFFF1A]/10 border border-white/10 p-8 md:p-10 rounded-[6px]">
-          {/* Header */}
-          <div className="mb-10">
-            <h1 className="font-serif text-4xl md:text-5xl font-normal text-[#C5A574] mb-2">
-              Hello!
-            </h1>
-            <h3 className="text-[#F9F6F1] text-base font-normal">
-              Access to manage your account
-            </h3>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-4xl font-serif text-[#0F3D61]">Hello!</h1>
+          <p className="text-base text-[#6C757D]">
+            Access to manage your account
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label
+              htmlFor="email"
+              className="text-base font-medium text-[#0F3D61]"
+            >
+              Email <span className="text-[#0F3D61]">*</span>
+            </label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email..."
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="bg-white border-[#484848] rounded-full px-4 h-[56px] placeholder:text-[#787878] text-[#0F3D61] text-base font-normal"
+              required
+            />
           </div>
 
-          {/* Form */}
-          <form className="space-y-6 ">
-            {/* Email Field */}
-            <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-[#F5F5F5] text-base font-medium"
-              >
-                Email *
-              </Label>
+          <div className="space-y-2">
+            <label
+              htmlFor="password"
+              className="text-base font-medium text-[#0F3D61]"
+            >
+              Password <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
               <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email..."
-                className="bg-transparent border-[#C0C3C1]  placeholder:text-white/40 focus:border-white/40  pl-5 h-12 rounded-full placeholder:text-[#F9F6F1] text-[#F9F6F1]"
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter Password..."
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="bg-white border-[#484848] rounded-full px-4 h-[56px] placeholder:text-[#787878] text-[#0F3D61] text-base font-normal"
+                required
               />
-            </div>
-
-            {/* Password Field */}
-            <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-[#F5F5F5] text-base font-medium"
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
-                Password *
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter Password..."
-                  className="bg-transparent border-[#C0C3C1] text-white placeholder:text-white/40 pl-5 focus:border-white/40 h-12 rounded-full pr-12 placeholder:text-[#F9F6F1] text-[#F9F6F1]"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/80"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
+          </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) =>
-                    setRememberMe(checked as boolean)
-                  }
-                  className="border-white/40 data-[state=checked]:bg-[#D4AF7A] data-[state=checked]:border-[#D4AF7A]"
-                />
-                <label
-                  htmlFor="remember"
-                  className="text-sm text-white/80 cursor-pointer"
-                >
-                  Remember Me
-                </label>
-              </div>
-              <Link
-                href="/forgot-password"
-                className="text-sm text-[#D4AF7A] hover:text-[#E5C08B] transition-colors"
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="remember"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+              />
+              <label
+                htmlFor="remember"
+                className="text-base text-[#0F3D61] cursor-pointer"
               >
-                Forget Password?
-              </Link>
+                Remember Me
+              </label>
             </div>
-
-            {/* Sign In Button */}
-            <Button
-              type="submit"
-              className="w-full h-12 bg-[#D4AF7A] hover:bg-[#C5A574] font-medium rounded-full transition-colors text-[18px] text-white"
-            >
-              Sign In
-            </Button>
-          </form>
-
-          {/* Sign Up Link */}
-          <div className="mt-8 text-center text-sm text-white/80">
-            Don&apos;t have an account?{" "}
             <Link
-              href="/signup"
-              className="text-white font-medium hover:text-[#D4AF7A] transition-colors"
+              href="/forgot-password"
+              className="text-base text-[#0F3D61] hover:underline"
             >
-              Sign Up
+              Forget Password?
             </Link>
           </div>
-        </div>
+
+          <div className="pt-6">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#0F3D61] hover:bg-[#0F3D61]/90 text-white rounded-full font-bold py-6 text-base"
+            >
+              {loading ? "Logging in..." : "Sign In"}
+            </Button>
+          </div>
+        </form>
       </div>
     </AuthLayout>
   );

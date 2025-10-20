@@ -20,7 +20,7 @@ const data = [
   { month: "May", earning: 700 },
   { month: "June", earning: 650 },
   { month: "July", earning: 800 },
-  { month: "Aug", earning: 750 },
+  { month: "Aug", earning: 2400 },
   { month: "Sep", earning: 900 },
   { month: "Oct", earning: 2000 },
   { month: "Nov", earning: 1200 },
