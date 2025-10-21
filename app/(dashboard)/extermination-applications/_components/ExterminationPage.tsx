@@ -1,174 +1,172 @@
 "use client"
 
-import { Header } from "@/components/Shared/Header"
 import { useState } from "react"
-
-const exterminationData = [
-  {
-    id: 1,
-    name: "David Juaal",
-    email: "example@example.com",
-    pestProblem: "Bedbugs",
-    company: "Pest Guard Pro",
-    submitted: "06/01/2025",
-  },
-  {
-    id: 2,
-    name: "David Juaal",
-    email: "example@example.com",
-    pestProblem: "Roaches",
-    company: "Extremify",
-    submitted: "06/01/2025",
-  },
-  {
-    id: 3,
-    name: "David Juaal",
-    email: "example@example.com",
-    pestProblem: "Rodents",
-    company: "Extermio",
-    submitted: "08/01/2025",
-  },
-  {
-    id: 4,
-    name: "David Juaal",
-    email: "example@example.com",
-    pestProblem: "Ants",
-    company: "PestPilot",
-    submitted: "06/01/2025",
-  },
-  {
-    id: 5,
-    name: "David Juaal",
-    email: "example@example.com",
-    pestProblem: "Termites",
-    company: "EcoExterm",
-    submitted: "06/01/2025",
-  },
-  {
-    id: 6,
-    name: "David Juaal",
-    email: "example@example.com",
-    pestProblem: "Fleas",
-    company: "BugSense",
-    submitted: "06/01/2025",
-  },
-  {
-    id: 7,
-    name: "David Juaal",
-    email: "example@example.com",
-    pestProblem: "Spiders",
-    company: "PestPilot",
-    submitted: "06/01/2025",
-  },
-  {
-    id: 8,
-    name: "David Juaal",
-    email: "example@example.com",
-    pestProblem: "Termites",
-    company: "Extremify",
-    submitted: "08/01/2025",
-  },
-  {
-    id: 9,
-    name: "David Juaal",
-    email: "example@example.com",
-    pestProblem: "Fleas",
-    company: "PestPilot",
-    submitted: "08/01/2025",
-  },
-  {
-    id: 10,
-    name: "David Juaal",
-    email: "example@example.com",
-    pestProblem: "Spiders",
-    company: "EcoExterm",
-    submitted: "08/01/2025",
-  },
-  {
-    id: 11,
-    name: "David Juaal",
-    email: "example@example.com",
-    pestProblem: "Bedbugs",
-    company: "Extremify",
-    submitted: "08/01/2025",
-  },
-  {
-    id: 12,
-    name: "David Juaal",
-    email: "example@example.com",
-    pestProblem: "Roaches",
-    company: "PestPilot",
-    submitted: "08/01/2025",
-  },
-]
+import { Header } from "@/components/Shared/Header"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { CustomPagination } from "@/components/Shared/CustomePaginaion"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { useSession } from "next-auth/react"
+import { useAssignedConstractor, useGetConstractor, useGetExtermination } from "@/hooks/ApiClling"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function ExterminationPage() {
   const [currentPage, setCurrentPage] = useState(1)
-  console.log(setCurrentPage)
-  const itemsPerPage = 5
+  const [assignedExpert, setAssignedExpert] = useState<Record<string, string>>({})
+  const itemsPerPage = 10
 
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const displayedData = exterminationData.slice(startIndex, startIndex + itemsPerPage)
+  const { data: session } = useSession()
+  const token = session?.accessToken || ""
+
+  const { data, isLoading } = useGetExtermination(token, currentPage, itemsPerPage)
+  const { data: constractorData } = useGetConstractor(token)
+  const assaignedContractor = useAssignedConstractor(token)
+  const constractors = constractorData?.data.data || []
+  const exterminationData = data?.data || []
+  const totalItems = data?.meta?.total || 0
+
+
+  const handleAssignExpert = (exterminationId: string, contractorId: string) => {
+    setAssignedExpert((prev) => ({
+      ...prev,
+      [exterminationId]: contractorId,
+    }))
+
+    assaignedContractor.mutate({
+      exterminationId,
+      constractorId: contractorId,
+    })
+
+  }
+
+  const getContractorName = (contractorId: string) => {
+    const contractor = constractors.find((c) => c._id === contractorId)
+    return contractor ? contractor.name : ""
+  }
 
   return (
     <div className="min-h-screen bg-muted/30">
-      {/* Header */}
-     
       <Header tittle="Extermination Applications" />
 
-      {/* Table */}
       <div className="p-6">
         <div className="bg-white rounded-lg border border-[#E6E7E6] overflow-hidden">
-          {/* Table Header */}
-          <div className="grid grid-cols-5 bg-[#E7ECEF] border-b border-border">
-            <div className="px-6 py-4 flex justify-between font-semibold text-foreground">
-              Name
-            </div>
-            <div className="px-6 py-4 flex justify-between font-semibold text-foreground">
-              Pest Problem
-            </div>
-            <div className="px-6 py-4 flex justify-between font-semibold text-foreground">
-              Companies
-            </div>
-            <div className="px-6 py-4 flex justify-between font-semibold text-foreground">
-              Submitted
-            </div>
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-[#E7ECEF] hover:bg-[#E7ECEF]">
+                <TableHead className="font-semibold text-[#343A40] text-center">Name</TableHead>
+                <TableHead className="font-semibold text-[#343A40] text-center">Pest Problem</TableHead>
+                <TableHead className="font-semibold text-[#343A40] text-center">Assign Contractor</TableHead>
+                <TableHead className="font-semibold text-[#343A40] text-center">Property Address</TableHead>
+                <TableHead className="font-semibold text-[#343A40] text-center">Submitted</TableHead>
+              </TableRow>
+            </TableHeader>
 
-          {/* Table Body */}
-          <div>
-            {displayedData.map((item) => (
-              <div
-                key={item.id}
-                className="grid grid-cols-5 border-b border-[#E6E7E6] hover:bg-muted/30 transition-colors"
-              >
-                <div className="px-6 py-4 flex justify-between flex-col">
-                  <p className="text-primary hover:underline font-medium">
-                    {item.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{item.email}</p>
-                </div>
-                <div className="px-6 py-4 flex justify-between text-foreground">
-                  {item.pestProblem}
-                </div>
-                <div className="px-6 py-4 flex justify-between text-foreground">
-                  {item.company}
-                </div>
-                <div className="px-6 py-4 flex justify-between text-muted-foreground">
-                  {item.submitted}
-                </div>
-              </div>
-            ))}
-          </div>
+            <TableBody>
+              {isLoading ? (
+                Array.from({ length: itemsPerPage }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-5 w-32 mx-auto" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-24 mx-auto" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-40 mx-auto" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-32 mx-auto" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-28 mx-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : exterminationData.length > 0 ? (
+                exterminationData.map((item) => (
+                  <TableRow key={item._id} className="hover:bg-muted/30">
+                    {/* Name */}
+                    <TableCell className="font-medium px-5">
+                      <p className="text-[#0F3D61] text-[16px] font-semibold hover:underline">
+                        {item.fullName}
+                      </p>
+                      <p className="text-[#68706A] text-[12px] mt-[6px]">{item.email}</p>
+                    </TableCell>
+
+                    {/* Pest Problem */}
+                    <TableCell className="text-center">
+                      {item.typeOfPestProblem?.join(", ")}
+                    </TableCell>
+
+                    {
+                      item.contractor ? (
+                        <TableCell className="text-center">
+                          {item.contractor.name}
+                        </TableCell>
+                      ) : (
+                        <TableCell className="text-center">
+                          {assignedExpert[item._id] ? (
+                            // Case: already assigned
+                            <span className="font-medium text-[#0F3D61]">
+                              {getContractorName(assignedExpert[item._id])}
+                            </span>
+                          ) : constractors.length > 0 ? (
+                            // Case: not assigned yet, show select
+                            <Select
+                              value=""
+                              onValueChange={(value) => handleAssignExpert(item._id, value)}
+                            >
+                              <SelectTrigger className="w-[180px] mx-auto">
+                                <SelectValue placeholder="Select Contractor" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white">
+                                {constractors.map((expert) => (
+                                  <SelectItem key={expert._id} value={expert._id}>
+                                    {expert.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+
+                            <p className="text-gray-500">No contractors available</p>
+                          )}
+                        </TableCell>
+                      )
+                    }
+
+
+
+                    {/* Property */}
+                    <TableCell className="text-center">{item.propertyAddress}</TableCell>
+
+                    {/* Submitted */}
+                    <TableCell className="text-center text-[#68706A]">
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-gray-500 py-6">
+                    No data found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
 
         {/* Pagination */}
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, exterminationData.length)} of{" "}
-            {exterminationData.length} results
-          </p>
-          {/* <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} /> */}
+        <div className="mt-6">
+          <CustomPagination
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </div>

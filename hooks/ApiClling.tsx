@@ -1,4 +1,6 @@
+import {  addAssingnedContractor, getConstractor } from "@/lib/constractor";
 import { getContact, getSingleContact } from "@/lib/contact";
+import { getExtermination } from "@/lib/extermination";
 import { getPayment } from "@/lib/payment";
 import { changePassword, getProfile, updateProfileInfo } from "@/lib/profileInfo";
 import { ProfileUpdatePayload, UserProfileResponse } from "@/types/userDataType";
@@ -93,3 +95,49 @@ export function useGetPayment(
         enabled: !!token,
     });
 }
+
+export function useGetExtermination(
+    token: string | undefined,
+    currentPage: number,
+    itemsPerPage: number
+) {
+    return useQuery({
+        queryKey: ["extermination", currentPage, itemsPerPage],
+        queryFn: () => {
+            if (!token) throw new Error("Token is missing");
+            return getExtermination(token, currentPage, itemsPerPage);
+        },
+        enabled: !!token,
+    });
+}
+
+export function useGetConstractor(
+    token: string | undefined,
+) {
+    return useQuery({
+        queryKey: ["constractor"],
+        queryFn: () => {
+            if (!token) throw new Error("Token is missing");
+            return getConstractor(token);
+        },
+        enabled: !!token,
+    });
+}
+
+export function useAssignedConstractor(token: string, onSuccessCallback?: () => void) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (payload: { exterminationId: string; constractorId: string }) => addAssingnedContractor(token, payload),
+        onSuccess: () => {
+            toast.success("constractor updated successfully");
+            queryClient.invalidateQueries({ queryKey: ["constractor"] });
+            if (onSuccessCallback) onSuccessCallback();
+        },
+        onError: (error: unknown) => {
+            if (error instanceof Error) toast.error(error.message || "Update failed");
+            else toast.error("Update failed");
+        },
+    });
+}
+
