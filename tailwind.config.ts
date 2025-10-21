@@ -13,7 +13,7 @@ const config: Config = {
         center: true,
         padding: "1rem",
         screens: {
-          DEFAULT: "1536px", // This sets the default max width
+          DEFAULT: "1120px", // This sets the default max width
         },
       },
       colors: {
