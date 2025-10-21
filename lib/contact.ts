@@ -1,4 +1,4 @@
-import {  ContactDetailsResponse, ContactResponse } from "@/types/contractorDataType"
+import {  ContactDetailsResponse, ContactResponse } from "@/types/contactrDataType"
 
 export async function getContact(
     token: string,

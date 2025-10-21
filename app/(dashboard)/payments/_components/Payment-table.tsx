@@ -10,7 +10,6 @@ import { useState } from "react"
 export default function PaymentPage() {
   const { data: session } = useSession()
   const token = session?.accessToken || ""
-  console.log(token)
 
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
