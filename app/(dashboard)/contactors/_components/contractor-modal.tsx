@@ -4,7 +4,17 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { X,   FileImage } from "lucide-react"
+import { X, FileImage, Loader2 } from "lucide-react"
+import Image from "next/image"
+import { useCreateContractor, useGetService } from "@/hooks/ApiClling"
+import { useSession } from "next-auth/react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface ContractorModalProps {
   isOpen: boolean
@@ -18,13 +28,22 @@ export function ContractorModal({ isOpen, onClose }: ContractorModalProps) {
     clientName: "",
     clientNumber: "",
     clientEmail: "",
-    department: "",
+    serviceId: "",
     serviceAreas: "",
     workHours: "",
     superContact: "",
+    scopeofWork: "",
+    superName: "",
   })
+
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+
+  const { data: session } = useSession()
+  const token = session?.accessToken || ""
+
+  const getService = useGetService(token)
+  const addContractorMutation = useCreateContractor(token)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -50,11 +69,22 @@ export function ContractorModal({ isOpen, onClose }: ContractorModalProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Form submitted:", {
-      ...formData,
-      image: selectedImage ? selectedImage.name : null
-    })
-    onClose()
+
+    const payload = {
+      companyName: formData.companyName,
+      companyAddress: formData.companyAddress,
+      name: formData.clientName,
+      number: formData.clientNumber,
+      email: formData.clientEmail,
+      serviceId: formData.serviceId,
+      serviceAreas: formData.serviceAreas,
+      workHours: formData.workHours,
+      superContact: formData.superContact,
+      scopeofWork: formData.scopeofWork,
+      superName: formData.superName,
+      image: selectedImage,
+    }
+    addContractorMutation.mutate(payload)
   }
 
   if (!isOpen) return null
@@ -88,7 +118,7 @@ export function ContractorModal({ isOpen, onClose }: ContractorModalProps) {
                 <label className="text-base font-medium text-[#616161] block mb-2">Company Address</label>
                 <Input
                   name="companyAddress"
-                  placeholder="Name Here"
+                  placeholder="Address Here"
                   value={formData.companyAddress}
                   onChange={handleChange}
                   className="border-[#B6B6B6] h-[50px] rounded-[4px] placeholder:text-[#ACACAC]"
@@ -115,7 +145,7 @@ export function ContractorModal({ isOpen, onClose }: ContractorModalProps) {
                 <label className="text-base font-medium text-[#616161] block mb-2">Client Number</label>
                 <Input
                   name="clientNumber"
-                  placeholder="Name Here"
+                  placeholder="Phone Number"
                   value={formData.clientNumber}
                   onChange={handleChange}
                   className="border-[#B6B6B6] h-[50px] rounded-[4px] placeholder:text-[#ACACAC]"
@@ -125,7 +155,7 @@ export function ContractorModal({ isOpen, onClose }: ContractorModalProps) {
                 <label className="text-base font-medium text-[#616161] block mb-2">Client Email</label>
                 <Input
                   name="clientEmail"
-                  placeholder="Name Here"
+                  placeholder="Email Address"
                   value={formData.clientEmail}
                   onChange={handleChange}
                   className="border-[#B6B6B6] h-[50px] rounded-[4px] placeholder:text-[#ACACAC]"
@@ -134,35 +164,59 @@ export function ContractorModal({ isOpen, onClose }: ContractorModalProps) {
             </div>
           </div>
 
-          {/* Department & Service */}
-          <div className="space-y-4">
+          {/* Service Selection */}
+          <div className="bg-white   rounded-md shadow-sm space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-base font-medium text-[#616161] block mb-2">Your Department</label>
-                <Input
-                  name="department"
-                  placeholder="Add your department..."
-                  value={formData.department}
-                  onChange={handleChange}
-                  className="border-[#B6B6B6] h-[50px] rounded-[4px] placeholder:text-[#ACACAC]"
-                />
+                <label className="text-base font-medium text-[#616161] block mb-2">
+                  Select Service
+                </label>
+                <Select
+                  value={formData.serviceId}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, serviceId: value }))
+                  }
+                >
+                  <SelectTrigger className="border-[#B6B6B6] h-[50px] rounded-[4px] bg-white">
+                    <SelectValue placeholder="Choose a service..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    {getService?.data?.data?.map((service) => (
+                      <SelectItem key={service._id} value={service._id}>
+                        {service.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <label className="text-base font-medium text-[#616161] block mb-2">Service Areas</label>
                 <Input
                   name="serviceAreas"
-                  placeholder="Name Here"
+                  placeholder="Service Areas"
                   value={formData.serviceAreas}
                   onChange={handleChange}
                   className="border-[#B6B6B6] h-[50px] rounded-[4px] placeholder:text-[#ACACAC]"
                 />
               </div>
             </div>
+
           </div>
+
 
           {/* Work Hours & Contact */}
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
+              <div>
+                <label className="text-base font-medium text-[#616161] block mb-2">Scope of Work</label>
+                <Input
+                  name="scopeofWork"
+                  placeholder=""
+                  value={formData.scopeofWork}
+                  onChange={handleChange}
+                  className="border-[#B6B6B6] h-[50px] rounded-[4px] placeholder:text-[#ACACAC]"
+                />
+              </div>
               <div>
                 <label className="text-base font-medium text-[#616161] block mb-2">Work Hours</label>
                 <Input
@@ -185,7 +239,13 @@ export function ContractorModal({ isOpen, onClose }: ContractorModalProps) {
               </div>
               <div>
                 <label className="text-base font-medium text-[#616161] block mb-2">Super Name</label>
-                <Input placeholder="Write Name" className="border-[#B6B6B6] h-[50px] rounded-[4px] placeholder:text-[#ACACAC]" />
+                <Input
+                  name="superName"
+                  placeholder=""
+                  value={formData.superName}
+                  onChange={handleChange}
+                  className="border-[#B6B6B6] h-[50px] rounded-[4px] placeholder:text-[#ACACAC]"
+                />
               </div>
             </div>
           </div>
@@ -202,17 +262,24 @@ export function ContractorModal({ isOpen, onClose }: ContractorModalProps) {
               />
               {imagePreview ? (
                 <div className="relative w-full h-full flex items-center justify-center">
-                  {/* <Image src={imagePreview} alt="Preview" width={100} height={100} className="max-h-[200px] max-w-full object-contain" /> */}
+                  <Image
+                    src={imagePreview}
+                    alt="Preview"
+                    width={300}
+                    height={200}
+                    className="max-h-[200px] max-w-full object-contain rounded-md"
+                  />
                   <button
+                    type="button"
                     onClick={handleRemoveImage}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                    className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 </div>
               ) : (
                 <>
-                  <FileImage  className="h-[100px] w-[100px] text-muted-foreground mb-2" />
+                  <FileImage className="h-[100px] w-[100px] text-muted-foreground mb-2" />
                   <p className="text-sm text-muted-foreground">Click to upload or drag and drop</p>
                 </>
               )}
@@ -221,8 +288,11 @@ export function ContractorModal({ isOpen, onClose }: ContractorModalProps) {
 
           {/* Footer */}
           <div className="flex gap-3 justify-end">
-            <Button type="submit" className="bg-[#0F3D61] h-[45px] hover:bg-[#0F3D61]/90 rounded-[8px] px-[68px] text-white">
-              Publish
+            <Button
+              type="submit"
+              className="bg-[#0F3D61] h-[45px] hover:bg-[#0F3D61]/90 rounded-[8px] px-[68px] text-white"
+            >
+              Publish {addContractorMutation.isPending && <Loader2 className="animate-spin" />}
             </Button>
           </div>
         </form>

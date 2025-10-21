@@ -1,10 +1,11 @@
-import {  addAssingnedContractor, getConstractor } from "@/lib/constractor";
+import { addAssingnedContractor, addcontractor, deleteContractor, getConstractor, getConstractorv1 } from "@/lib/constractor";
 import { getContact, getSingleContact } from "@/lib/contact";
 import { getExtermination } from "@/lib/extermination";
 import { getPayment } from "@/lib/payment";
 import { changePassword, getProfile, updateProfileInfo } from "@/lib/profileInfo";
+import { getService } from "@/lib/service";
 import { ProfileUpdatePayload, UserProfileResponse } from "@/types/userDataType";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {  useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export function useProfileQuery(token: string | undefined) {
@@ -74,7 +75,7 @@ export function useGetSingelContact(
         queryKey: ["singelContact", id],
         queryFn: () => {
             if (!token) throw new Error("Token is missing");
-            return getSingleContact(token,id);
+            return getSingleContact(token, id);
         },
         enabled: !!token,
     });
@@ -141,3 +142,80 @@ export function useAssignedConstractor(token: string, onSuccessCallback?: () => 
     });
 }
 
+export function useGetConstractorv1(
+    token: string | undefined,
+    currentPage: number,
+    itemsPerPage: number
+) {
+    return useQuery({
+        queryKey: ["constractor"],
+        queryFn: () => {
+            if (!token) throw new Error("Token is missing");
+            return getConstractorv1(token, currentPage, itemsPerPage);
+        },
+        enabled: !!token,
+    });
+}
+
+export function useDeleteConstractor (token: string, onSuccessCallback?: () => void) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => deleteContractor(token, id),
+        onSuccess: () => {
+            toast.success("constractor deleted successfully");
+            if (onSuccessCallback) onSuccessCallback();
+            queryClient.invalidateQueries({ queryKey: ["constractor"] });
+        },
+        onError: (error: unknown) => {
+            if (error instanceof Error) toast.error(error.message || "Update failed");
+            else toast.error("Update failed");
+        },
+    });
+}
+
+export interface ContractorPayload {
+  companyName: string
+  companyAddress: string
+  name: string
+  number: string
+  email: string
+  serviceId: string
+  workHours: string
+  superContact: string
+  serviceAreas: string
+  scopeofWork: string
+  superName: string
+  image: File | null
+}
+
+
+export function useCreateContractor(token: string, onSuccessCallback?: () => void) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (payload:ContractorPayload) => addcontractor(token, payload),
+        onSuccess: () => {
+            toast.success("Profile updated successfully");
+            queryClient.invalidateQueries({ queryKey: ["constractor"] });
+            if (onSuccessCallback) onSuccessCallback();
+        },
+        onError: (error: unknown) => {
+            if (error instanceof Error) toast.error(error.message || "Update failed");
+            else toast.error("Update failed");
+        },
+    });
+}
+
+
+export function useGetService(
+    token: string | undefined,
+) {
+    return useQuery({
+        queryKey: ["service"],
+        queryFn: () => {
+            if (!token) throw new Error("Token is missing");
+            return getService(token);
+        },
+        enabled: !!token,
+    });
+}
