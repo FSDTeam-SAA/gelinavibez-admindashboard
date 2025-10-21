@@ -9,19 +9,25 @@ import Bradecumb from "@/components/Shared/Bradecumb"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import Image from "next/image"
+import { toast } from "sonner"
+import { useSession } from "next-auth/react"
 
 interface FormData {
   title: string
-  address: string
-  price: string
-  beds: string
-  bathrooms: string
-  squarefeet: string
   description: string
   aboutListing: string
+  price: string
+  bedrooms: string
+  bathrooms: string
+  squareFeet: string
+  street: string
+  city: string
+  state: string
+  zipCode: string
+  amenities: string[]
   day: string
-  month?: string
-  availableTime?: string
+  month: string
+  availableTime: string
 }
 
 interface MediaFile {
@@ -31,21 +37,28 @@ interface MediaFile {
 
 const AddApartment: React.FC = () => {
   const router = useRouter()
+  const { data: session } = useSession()
   const [formData, setFormData] = useState<FormData>({
     title: "",
-    address: "",
-    price: "",
-    beds: "",
-    bathrooms: "",
-    squarefeet: "",
     description: "",
     aboutListing: "",
+    price: "",
+    bedrooms: "",
+    bathrooms: "",
+    squareFeet: "",
+    street: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    amenities: [],
     day: "",
     month: "",
     availableTime: "",
   })
   const [images, setImages] = useState<MediaFile[]>([])
   const [videos, setVideos] = useState<MediaFile[]>([])
+  const [errors, setErrors] = useState<Partial<FormData>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -55,7 +68,18 @@ const AddApartment: React.FC = () => {
       ...prev,
       [name]: value,
     }))
+    setErrors((prev) => ({ ...prev, [name]: "" }))
   }
+
+  // const handleAmenitiesChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //   const { value, checked } = e.target
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     amenities: checked
+  //       ? [...prev.amenities, value]
+  //       : prev.amenities.filter((amenity) => amenity !== value),
+  //   }))
+  // }
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -64,7 +88,7 @@ const AddApartment: React.FC = () => {
         file,
         url: URL.createObjectURL(file),
       }))
-      setImages((prev) => [...prev, ...newImages].slice(0, 5)) // Limit to 5 images
+      setImages((prev) => [...prev, ...newImages].slice(0, 5))
     }
   }
 
@@ -75,7 +99,7 @@ const AddApartment: React.FC = () => {
         file,
         url: URL.createObjectURL(file),
       }))
-      setVideos((prev) => [...prev, ...newVideos].slice(0, 5)) // Limit to 5 videos
+      setVideos((prev) => [...prev, ...newVideos].slice(0, 5))
     }
   }
 
@@ -87,27 +111,98 @@ const AddApartment: React.FC = () => {
     setVideos((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handlePublish = () => {
-    console.log("Publishing apartment listing:", { ...formData, images, videos })
-    router.push("/dashboard")
+  const validateForm = (): boolean => {
+    const newErrors: Partial<FormData> = {}
+    
+    if (!formData.title) newErrors.title = "Title is required"
+    if (!formData.description) newErrors.description = "Description is required"
+    if (!formData.price || isNaN(Number(formData.price))) 
+      newErrors.price = "Valid price is required"
+    if (!formData.bedrooms || isNaN(Number(formData.bedrooms))) 
+      newErrors.bedrooms = "Valid number of bedrooms is required"
+    if (!formData.bathrooms || isNaN(Number(formData.bathrooms))) 
+      newErrors.bathrooms = "Valid number of bathrooms is required"
+    if (!formData.squareFeet || isNaN(Number(formData.squareFeet))) 
+      newErrors.squareFeet = "Valid square footage is required"
+    if (!formData.street) newErrors.street = "Street is required"
+    if (!formData.city) newErrors.city = "City is required"
+    if (!formData.state) newErrors.state = "State is required"
+    if (!formData.zipCode) newErrors.zipCode = "Zip code is required"
+    if (!formData.day) newErrors.day = "Day is required"
+    if (!formData.month) newErrors.month = "Month is required"
+    if (!formData.availableTime) newErrors.availableTime = "Available time is required"
+    if (images.length === 0) toast.error("At least one image is required")
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0 && images.length > 0
+  }
+
+  const handlePublish = async () => {
+    if (!validateForm()) return
+
+    setIsSubmitting(true)
+    try {
+      const formDataToSend = new FormData()
+      
+      formDataToSend.append("title", formData.title)
+      formDataToSend.append("description", formData.description)
+      formDataToSend.append("aboutListing", formData.aboutListing)
+      formDataToSend.append("price", formData.price)
+      formDataToSend.append("bedrooms", formData.bedrooms)
+      formDataToSend.append("bathrooms", formData.bathrooms)
+      formDataToSend.append("squareFeet", formData.squareFeet)
+      formDataToSend.append("address[street]", formData.street)
+      formDataToSend.append("address[city]", formData.city)
+      formDataToSend.append("address[state]", formData.state)
+      formDataToSend.append("address[zipCode]", formData.zipCode)
+      formData.amenities.forEach((amenity, index) => {
+        formDataToSend.append(`amenities[${index}]`, amenity)
+      })
+      formDataToSend.append("day", formData.day)
+      formDataToSend.append("availableFrom[month]", formData.month)
+      formDataToSend.append("availableFrom[time]", new Date(formData.availableTime).toISOString())
+
+      images.forEach((image) => {
+        formDataToSend.append("images", image.file)
+      })
+      videos.forEach((video) => {
+        formDataToSend.append("videos", video.file)
+      })
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/apartment`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: formDataToSend,
+      })
+
+      if (response.ok) {
+        toast.success("Apartment listing created successfully!", {
+          position: "top-right",
+        })
+        setTimeout(() => router.push(`/apartment-listings`), 1000)
+      } else {
+        throw new Error("Failed to create apartment listing")
+      }
+    } catch (error) {
+      toast.error("Error creating apartment listing" + error, {
+        position: "top-right",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
       <Header tittle="Add Apartment Listing" />
-
-      {/* Breadcrumb */}
       <Bradecumb pageName="Apartment Listings" subPageName="Add Apartment Listing" />
-
-      {/* Main Content */}
       <div className="pr-5">
         <div className="grid grid-cols-3 gap-6">
-          {/* Left Column - Form */}
           <div className="col-span-2">
             <div className="">
-              <form className="space-y-6">
-                {/* Title */}
+              <div className="space-y-6">
                 <div>
                   <label className="block text-base font-medium text-[#000000] mb-2">Add Title</label>
                   <Input
@@ -116,25 +211,73 @@ const AddApartment: React.FC = () => {
                     value={formData.title}
                     onChange={handleInputChange}
                     placeholder="Add your title..."
-                    className="w-full px-4 py-2 border border-[#B6B6B6] rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6]"
+                    className={`w-full px-4 py-2 border rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6] ${
+                      errors.title ? "border-red-500" : "border-[#B6B6B6]"
+                    }`}
                   />
+                  {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
                 </div>
 
-                {/* Address */}
-                <div>
-                  <label className="block text-base font-medium text-[#000000] mb-2">Address</label>
-                  <Input
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    placeholder="888 Harbor Dr, Marina District"
-                    className="w-full px-4 py-2 border border-[#B6B6B6] rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6]"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-base font-medium text-[#000000] mb-2">Street</label>
+                    <Input
+                      type="text"
+                      name="street"
+                      value={formData.street}
+                      onChange={handleInputChange}
+                      placeholder="House 15, Road 27"
+                      className={`w-full px-4 py-2 border rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6] ${
+                        errors.street ? "border-red-500" : "border-[#B6B6B6]"
+                      }`}
+                    />
+                    {errors.street && <p className="text-red-500 text-sm mt-1">{errors.street}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-base font-medium text-[#000000] mb-2">City</label>
+                    <Input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      placeholder="Dhaka"
+                      className={`w-full px-4 py-2 border rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6] ${
+                        errors.city ? "border-red-500" : "border-[#B6B6B6]"
+                      }`}
+                    />
+                    {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-base font-medium text-[#000000] mb-2">State</label>
+                    <Input
+                      type="text"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                      placeholder="Dhaka Division"
+                      className={`w-full px-4 py-2 border rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6] ${
+                        errors.state ? "border-red-500" : "border-[#B6B6B6]"
+                      }`}
+                    />
+                    {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-base font-medium text-[#000000] mb-2">Zip Code</label>
+                    <Input
+                      type="text"
+                      name="zipCode"
+                      value={formData.zipCode}
+                      onChange={handleInputChange}
+                      placeholder="1209"
+                      className={`w-full px-4 py-2 border rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6] ${
+                        errors.zipCode ? "border-red-500" : "border-[#B6B6B6]"
+                      }`}
+                    />
+                    {errors.zipCode && <p className="text-red-500 text-sm mt-1">{errors.zipCode}</p>}
+                  </div>
                 </div>
 
-                {/* Price, Month, Available Time */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <div>
                     <label className="block text-base font-medium text-[#000000] mb-2">Price</label>
                     <Input
@@ -143,8 +286,96 @@ const AddApartment: React.FC = () => {
                       value={formData.price}
                       onChange={handleInputChange}
                       placeholder="Add price..."
-                      className="w-full px-4 py-2 border border-[#B6B6B6] rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6]"
+                      className={`w-full px-4 py-2 border rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6] ${
+                        errors.price ? "border-red-500" : "border-[#B6B6B6]"
+                      }`}
                     />
+                    {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-base font-medium text-[#000000] mb-2">Bedrooms</label>
+                    <Input
+                      type="text"
+                      name="bedrooms"
+                      value={formData.bedrooms}
+                      onChange={handleInputChange}
+                      placeholder="Write here"
+                      className={`w-full px-4 py-2 border rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6] ${
+                        errors.bedrooms ? "border-red-500" : "border-[#B6B6B6]"
+                      }`}
+                    />
+                    {errors.bedrooms && <p className="text-red-500 text-sm mt-1">{errors.bedrooms}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-base font-medium text-[#000000] mb-2">Bathrooms</label>
+                    <Input
+                      type="text"
+                      name="bathrooms"
+                      value={formData.bathrooms}
+                      onChange={handleInputChange}
+                      placeholder="Write here"
+                      className={`w-full px-4 py-2 border rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6] ${
+                        errors.bathrooms ? "border-red-500" : "border-[#B6B6B6]"
+                      }`}
+                    />
+                    {errors.bathrooms && <p className="text-red-500 text-sm mt-1">{errors.bathrooms}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-base font-medium text-[#000000] mb-2">Square Feet</label>
+                    <Input
+                      type="text"
+                      name="squareFeet"
+                      value={formData.squareFeet}
+                      onChange={handleInputChange}
+                      placeholder="Write here"
+                      className={`w-full px-4 py-2 border rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6] ${
+                        errors.squareFeet ? "border-red-500" : "border-[#B6B6B6]"
+                      }`}
+                    />
+                    {errors.squareFeet && <p className="text-red-500 text-sm mt-1">{errors.squareFeet}</p>}
+                  </div>
+                </div>
+
+                {/* <div>
+                  <label className="block text-base font-medium text-[#000000] mb-2">Amenities</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {["Parking", "Lift", "Security", "Balcony", "Generator", "Air Conditioning"].map((amenity) => (
+                      <label key={amenity} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          value={amenity}
+                          checked={formData.amenities.includes(amenity)}
+                          onChange={handleAmenitiesChange}
+                          className="h-4 w-4"
+                        />
+                        <span>{amenity}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div> */}
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-base font-medium text-[#000000] mb-2">Day</label>
+                    <select
+                      name="day"
+                      value={formData.day}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6] ${
+                        errors.day ? "border-red-500" : "border-[#B6B6B6]"
+                      }`}
+                    >
+           
+                      <option value="">Select a day</option>
+                      <option value="monday">Monday</option>
+                      <option value="tuesday">Tuesday</option>
+                      <option value="wednesday">Wednesday</option>
+                      <option value="thursday">Thursday</option>
+                      <option value="friday">Friday</option>
+                      <option value="saturday">Saturday</option>
+                      <option value="sunday">Sunday</option>
+                    </select>
+                    {errors.day && <p className="text-red-500 text-sm mt-1">{errors.day}</p>}
                   </div>
                   <div>
                     <label className="block text-base font-medium text-[#000000] mb-2">Select Month</label>
@@ -152,7 +383,9 @@ const AddApartment: React.FC = () => {
                       name="month"
                       value={formData.month}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-[#B6B6B6] rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6]"
+                      className={`w-full px-4 py-2 border rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6] ${
+                        errors.month ? "border-red-500" : "border-[#B6B6B6]"
+                      }`}
                     >
                       <option value="">Select</option>
                       <option>January</option>
@@ -168,58 +401,23 @@ const AddApartment: React.FC = () => {
                       <option>November</option>
                       <option>December</option>
                     </select>
+                    {errors.month && <p className="text-red-500 text-sm mt-1">{errors.month}</p>}
                   </div>
                   <div>
                     <label className="block text-base font-medium text-[#000000] mb-2">Available Time</label>
                     <Input
-                      type="text"
+                      type="datetime-local"
                       name="availableTime"
                       value={formData.availableTime}
                       onChange={handleInputChange}
-                      placeholder="Write Here"
-                      className="w-full px-4 py-2 border border-[#B6B6B6] rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6]"
+                      className={`w-full px-4 py-2 border rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6] ${
+                        errors.availableTime ? "border-red-500" : "border-[#B6B6B6]"
+                      }`}
                     />
+                    {errors.availableTime && <p className="text-red-500 text-sm mt-1">{errors.availableTime}</p>}
                   </div>
                 </div>
 
-                {/* Beds, Bathrooms, Squarefeet */}
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-base font-medium text-[#000000] mb-2">Beds</label>
-                    <Input
-                      type="text"
-                      name="beds"
-                      value={formData.beds}
-                      onChange={handleInputChange}
-                      placeholder="Write here"
-                      className="w-full px-4 py-2 border border-[#B6B6B6] rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-base font-medium text-[#000000] mb-2">Bathrooms</label>
-                    <Input
-                      type="text"
-                      name="bathrooms"
-                      value={formData.bathrooms}
-                      onChange={handleInputChange}
-                      placeholder="Write here"
-                      className="w-full px-4 py-2 border border-[#B6B6B6] rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-base font-medium text-[#000000] mb-2">Squarefeets</label>
-                    <Input
-                      type="text"
-                      name="squarefeet"
-                      value={formData.squarefeet}
-                      onChange={handleInputChange}
-                      placeholder="Write here"
-                      className="w-full px-4 py-2 border border-[#B6B6B6] rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6]"
-                    />
-                  </div>
-                </div>
-
-                {/* Description */}
                 <div>
                   <label className="block text-base font-medium text-[#000000] mb-2">Description</label>
                   <Textarea
@@ -228,11 +426,13 @@ const AddApartment: React.FC = () => {
                     onChange={handleInputChange}
                     placeholder="Description..."
                     rows={6}
-                    className="w-full px-4 py-2 border border-[#B6B6B6] rounded-[4px] h-[341px] placeholder:text-[#B6B6B6]"
+                    className={`w-full px-4 py-2 border rounded-[4px] h-[341px] placeholder:text-[#B6B6B6] ${
+                      errors.description ? "border-red-500" : "border-[#B6B6B6]"
+                    }`}
                   />
+                  {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
                 </div>
 
-                {/* About Listing */}
                 <div>
                   <label className="block text-base font-medium text-[#000000] mb-2">About Listing</label>
                   <Textarea
@@ -241,36 +441,17 @@ const AddApartment: React.FC = () => {
                     onChange={handleInputChange}
                     placeholder="Description..."
                     rows={6}
-                    className="w-full px-4 py-2 border border-[#B6B6B6] rounded-[4px] h-[341px] placeholder:text-[#B6B6B6]"
+                    className={`w-full px-4 py-2 border rounded-[4px] h-[341px] placeholder:text-[#B6B6B6] ${
+                      errors.aboutListing ? "border-red-500" : "border-[#B6B6B6]"
+                    }`}
                   />
+                  {errors.aboutListing && <p className="text-red-500 text-sm mt-1">{errors.aboutListing}</p>}
                 </div>
-              </form>
+              </div>
             </div>
           </div>
 
-          {/* Right Column - Media */}
           <div className="col-span-1 space-y-6 border">
-            {/* Day Selector */}
-            <div className="p-6">
-              <label className="block text-base font-medium text-[#000000] mb-3">Day</label>
-              <select
-                name="day"
-                value={formData.day}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 bg-transparent border border-[#B6B6B6] rounded-[4px] h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#B6B6B6]"
-              >
-                <option value="">Select a day</option>
-                <option>Monday</option>
-                <option>Tuesday</option>
-                <option>Wednesday</option>
-                <option>Thursday</option>
-                <option>Friday</option>
-                <option>Saturday</option>
-                <option>Sunday</option>
-              </select>
-            </div>
-
-            {/* Thumbnail */}
             <div className="p-6">
               <label className="block text-base font-medium text-[#000000] mb-3">Thumbnail</label>
               <div className="border-2 border-dashed border-[#B6B6B6] rounded-[4px] h-[414px] p-8 text-center relative">
@@ -305,7 +486,6 @@ const AddApartment: React.FC = () => {
               </div>
             </div>
 
-            {/* Videos */}
             <div className="p-6">
               <label className="block text-base font-medium text-[#000000] mb-3">Videos</label>
               <div className="border-2 border-dashed border-[#B6B6B6] rounded-[4px] h-[414px] p-8 text-center relative">
@@ -339,10 +519,15 @@ const AddApartment: React.FC = () => {
           </div>
         </div>
 
-        {/* Publish Button */}
         <div className="flex justify-end mt-10 pb-2">
-          <Button onClick={handlePublish} className="bg-[#0F3D61] hover:bg-[#0F3D61]/10 h-[48px] rounded-[8px] text-white px-8">
-            Publish
+          <Button
+            onClick={handlePublish}
+            disabled={isSubmitting}
+            className={`bg-[#0F3D61] hover:bg-[#0F3D61]/10 h-[48px] rounded-[8px] text-white px-8 ${
+              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            {isSubmitting ? "Publishing..." : "Publish"}
           </Button>
         </div>
       </div>

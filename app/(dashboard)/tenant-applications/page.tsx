@@ -14,7 +14,7 @@ export default function TenantApplicationsPage() {
   return (
     <div className="min-h-screen bg-gray-50 ">
       <Header tittle="Tenant Applications Management" />
-      <div className="w-full mt-6">
+      <div className=" mt-6 pr-5">
         <div className="mb-6 flex justify-end gap-3 pr-5">
           <Button
             variant={activeTab === "applications" ? "default" : "outline"}
