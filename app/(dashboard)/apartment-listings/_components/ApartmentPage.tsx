@@ -20,6 +20,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { useSession } from "next-auth/react"
+import Link from "next/link"
 
 
 interface Address {
@@ -117,14 +118,7 @@ const fetchApartments = async (page: number): Promise<ApiResponse> => {
   return response.json()
 }
 
-const deleteApartment = async (id: string): Promise<void> => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/apartment/${id}`, {
-    method: "DELETE",
-  })
-  if (!response.ok) {
-    throw new Error("Failed to delete apartment")
-  }
-}
+
 
 
 
@@ -136,6 +130,20 @@ export default function ApartmentPage() {
   const sesseion=useSession();
   const token = sesseion.data?.accessToken
   const queryClient = useQueryClient()
+  
+
+  const deleteApartment = async (id: string): Promise<void> => {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/apartment/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  if (!response.ok) {
+    throw new Error("Failed to delete apartment")
+  }
+}
 
   const updateApartmentStatus = async ({ id, status }: { id: string; status: string }): Promise<void> => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/apartment/${id}/status`, {
@@ -320,12 +328,15 @@ export default function ApartmentPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
+                          <Link href={`edit-aparment/${apartment._id}`}>
+                         
                           <button
                             className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
                             aria-label="Edit apartment"
                           >
                             <Edit className="w-4 h-4 text-gray-600" />
                           </button>
+                           </Link>
                           <button
                             className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
                             aria-label="Delete apartment"
