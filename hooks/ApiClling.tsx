@@ -1,6 +1,7 @@
 import { addAssingnedContractor, addcontractor, deleteContractor, getConstractor, getConstractorv1 } from "@/lib/constractor";
 import { getContact, getSingleContact } from "@/lib/contact";
 import { getExtermination } from "@/lib/extermination";
+import { getNewsletter } from "@/lib/newsletter";
 import { getPayment } from "@/lib/payment";
 import { changePassword, getProfile, updateProfileInfo } from "@/lib/profileInfo";
 import { getService } from "@/lib/service";
@@ -215,6 +216,21 @@ export function useGetService(
         queryFn: () => {
             if (!token) throw new Error("Token is missing");
             return getService(token);
+        },
+        enabled: !!token,
+    });
+}
+
+export function useGetNewsletter(
+    token: string | undefined,
+    currentPage: number,
+    itemsPerPage: number
+) {
+    return useQuery({
+        queryKey: ["newsletter", currentPage, itemsPerPage],
+        queryFn: () => {
+            if (!token) throw new Error("Token is missing");
+            return getNewsletter(token , currentPage, itemsPerPage);
         },
         enabled: !!token,
     });

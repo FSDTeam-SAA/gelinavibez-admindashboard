@@ -118,7 +118,7 @@ export function ExterminationPage() {
                               value=""
                               onValueChange={(value) => handleAssignExpert(item._id, value)}
                             >
-                              <SelectTrigger className="w-[180px] mx-auto">
+                              <SelectTrigger className="w-[180px] border-gray-300  mx-auto">
                                 <SelectValue placeholder="Select Contractor" />
                               </SelectTrigger>
                               <SelectContent className="bg-white">
