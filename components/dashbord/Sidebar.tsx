@@ -15,8 +15,10 @@ const navigation = [
   { name: "Apartment Listings Management", href: "/apartment-listings", icon: Home },
   { name: "Contactors", href: "/contactors", icon: ContactRound },
   { name: "Services", href: "/services", icon: BrickWallShield },
+  { name: "Bookings", href: "/bookings", icon: BrickWallShield },
   { name: "Payments", href: "/payments", icon: CreditCard },
   { name: "Contacts", href: "/contacts", icon: Users },
+  { name: "News Letter", href: "/newsletter", icon: Users },
   { name: "Settings", href: "/settings", icon: Settings },
 ]
 
