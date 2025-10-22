@@ -71,15 +71,15 @@ const AddApartment: React.FC = () => {
     setErrors((prev) => ({ ...prev, [name]: "" }))
   }
 
-  // const handleAmenitiesChange = (e: ChangeEvent<HTMLInputElement>) => {
-  //   const { value, checked } = e.target
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     amenities: checked
-  //       ? [...prev.amenities, value]
-  //       : prev.amenities.filter((amenity) => amenity !== value),
-  //   }))
-  // }
+  const handleAmenitiesChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      amenities: checked
+        ? [...prev.amenities, value]
+        : prev.amenities.filter((amenity) => amenity !== value),
+    }))
+  }
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -336,7 +336,7 @@ const AddApartment: React.FC = () => {
                   </div>
                 </div>
 
-                {/* <div>
+                <div>
                   <label className="block text-base font-medium text-[#000000] mb-2">Amenities</label>
                   <div className="grid grid-cols-3 gap-2">
                     {["Parking", "Lift", "Security", "Balcony", "Generator", "Air Conditioning"].map((amenity) => (
@@ -352,7 +352,7 @@ const AddApartment: React.FC = () => {
                       </label>
                     ))}
                   </div>
-                </div> */}
+                </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
@@ -523,7 +523,7 @@ const AddApartment: React.FC = () => {
           <Button
             onClick={handlePublish}
             disabled={isSubmitting}
-            className={`bg-[#0F3D61] hover:bg-[#0F3D61]/10 h-[48px] rounded-[8px] text-white px-8 ${
+            className={`bg-[#0F3D61] hover:bg-[#0F3D61]/90 h-[48px] rounded-[8px] text-white px-8 ${
               isSubmitting ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
