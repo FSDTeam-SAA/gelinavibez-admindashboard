@@ -2,7 +2,7 @@ import { addAssingnedContractor, addcontractor, deleteContractor, getConstractor
 import { getContact, getSingleContact } from "@/lib/contact";
 import { getExtermination } from "@/lib/extermination";
 import { getNewsletter } from "@/lib/newsletter";
-import { getPayment } from "@/lib/payment";
+import { addcPrice, getPayment, getPrice } from "@/lib/payment";
 import { changePassword, getProfile, updateProfileInfo } from "@/lib/profileInfo";
 import { getService } from "@/lib/service";
 import { ProfileUpdatePayload, UserProfileResponse } from "@/types/userDataType";
@@ -233,5 +233,36 @@ export function useGetNewsletter(
             return getNewsletter(token , currentPage, itemsPerPage);
         },
         enabled: !!token,
+    });
+}
+
+export function useGetPrice(
+    token: string | undefined,
+) {
+    return useQuery({
+        queryKey: ["price"],
+        queryFn: () => {
+            if (!token) throw new Error("Token is missing");
+            return getPrice(token);
+        },
+        enabled: !!token,
+    });
+}
+
+export function useAddPrice(token: string, setIsPriceModalOpen: React.Dispatch<React.SetStateAction<boolean>> , onSuccessCallback?: () => void) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (payload:{price:number}) => addcPrice(token, payload),
+        onSuccess: () => {
+            toast.success("Price added successfully");
+            queryClient.invalidateQueries({ queryKey: ["price"] });
+            setIsPriceModalOpen(false)
+            if (onSuccessCallback) onSuccessCallback();
+        },
+        onError: (error: unknown) => {
+            if (error instanceof Error) toast.error(error.message || "Update failed");
+            else toast.error("Update failed");
+        },
     });
 }
