@@ -4,6 +4,7 @@ import { MapPin} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useQuery } from "@tanstack/react-query"
 import { useSession } from "next-auth/react"
+import Link from "next/link"
 
 interface User {
   _id: string;
@@ -66,9 +67,11 @@ export function RecentCustomers() {
           <CardTitle>
             <h3 className="text-[18px] font-semibold text-[#343A40]">Recent Customers</h3>
           </CardTitle>
+          
           <Button variant="link" className="text-base font-bold text-[#0F3D61] p-0 h-auto">
             See all
           </Button>
+         
         </CardHeader>
         <CardContent>
           <div>Loading...</div>
@@ -83,9 +86,11 @@ export function RecentCustomers() {
         <CardTitle>
           <h3 className="text-[18px] font-semibold text-[#343A40]">Recent Customers</h3>
         </CardTitle>
+        <Link href="/contacts">
         <Button variant="link" className="text-base font-bold text-[#0F3D61] p-0 h-auto">
           See all
         </Button>
+         </Link>
       </CardHeader>
       <CardContent className="space-y-4">
         {customers.slice(0, 3).map((customer) => (

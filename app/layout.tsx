@@ -27,7 +27,7 @@ const poppins = Poppins({
 });
 
 export const metadata = {
-  title: "Bridge Point Solution",
+  title: "Bridge Point Solution || Admin Dashboard",
   description: "Next.js 14 App with custom fonts",
   icons: {
     icon: "/assets/apple-touch-icon.png",

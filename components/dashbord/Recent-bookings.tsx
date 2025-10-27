@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 // Define interfaces for the API response
 interface Apartment {
@@ -108,12 +109,14 @@ export function RecentBookings() {
             Recent Bookings
           </h3>
         </CardTitle>
+        <Link href="/bookings" >
         <Button
           variant="link"
           className="text-base font-bold text-[#0F3D61] p-0 h-auto"
         >
           See all
         </Button>
+        </Link>
       </CardHeader>
       <CardContent className="space-y-4">
         {bookings.slice(0, 3).map((booking) => (
