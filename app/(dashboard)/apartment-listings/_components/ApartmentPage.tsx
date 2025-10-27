@@ -293,11 +293,11 @@ export default function ApartmentPage() {
                   apartments.map((apartment) => (
                     <tr key={apartment._id} className="border-b border-[#E6E7E6]">
                       <td className="px-6 py-4 text-base text-[#424242]">
-                        {apartment.day.charAt(0).toUpperCase() + apartment.day.slice(1)}
+                        {apartment?.day?.charAt(0)?.toUpperCase() + apartment?.day?.slice(1)}
                       </td>
-                      <td className="px-6 py-4 text-base text-[#424242]">{apartment.title}</td>
+                      <td className="px-6 py-4 text-base text-[#424242]">{apartment?.title}</td>
                       <td className="px-6 py-4 text-base text-[#424242]">
-                        {new Date(apartment.availableFrom.time).toLocaleString()}
+                        {new Date(apartment?.availableFrom?.time).toLocaleString()}
                       </td>
                       <td className="px-6 py-4 w-[200px]">
                         <Select
