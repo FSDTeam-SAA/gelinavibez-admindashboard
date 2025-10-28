@@ -2,6 +2,7 @@
 
 import { CustomPagination } from "@/components/Shared/CustomePaginaion"
 import { Header } from "@/components/Shared/Header"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useGetPayment } from "@/hooks/ApiClling"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
@@ -15,9 +16,6 @@ export default function PaymentPage() {
   const itemsPerPage = 10
   const getData = useGetPayment(token, currentPage, itemsPerPage)
 
-  if (getData.isLoading) {
-    return <div className="p-10 text-center text-lg">Loading...</div>
-  }
 
   const mockPayments = getData.data?.data || []
   const totalItems = getData.data?.meta?.total || 0
@@ -39,27 +37,52 @@ export default function PaymentPage() {
               </tr>
             </thead>
             <tbody>
-              {mockPayments.map((payment) => (
-                <tr key={payment._id} className="border-b border-[#E6E7E6] ">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <Image src={payment?.user?.profileImage} alt={payment?.user?.firstName} width={100} height={100} className="h-8 w-8 rounded-full" />
-                      <div>
-                        <p className="text-base font-medium text-[#343A40]">{payment?.user?.firstName}</p>
-                        <p className="text-xs text-[#68706A]">{payment?.user?.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-base font-medium text-[#343A40]">{payment.amount}</td>
-                  <td className="px-6 py-4 text-base text-[#68706A] text-center">
-                    {new Date(payment.createdAt).toLocaleDateString("en-GB", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </td>
-                </tr>
-              ))}
+              {getData.isLoading ? (
+                  // Skeleton Rows
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <tr key={i} className="border-b border-[#E6E7E6]">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-8 w-8 rounded-full" />
+                          <div>
+                            <Skeleton className="h-4 w-24 mb-1" />
+                            <Skeleton className="h-3 w-32" />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <Skeleton className="h-4 w-24 mx-auto" />
+                      </td>
+                    </tr>
+                  ))
+                )
+
+
+                  :
+                  mockPayments.map((payment) => (
+                    <tr key={payment._id} className="border-b border-[#E6E7E6] ">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <Image src={payment?.user?.profileImage} alt={payment?.user?.firstName} width={100} height={100} className="h-8 w-8 rounded-full" />
+                          <div>
+                            <p className="text-base font-medium text-[#343A40]">{payment?.user?.firstName}</p>
+                            <p className="text-xs text-[#68706A]">{payment?.user?.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-base font-medium text-[#343A40]">{payment.amount}</td>
+                      <td className="px-6 py-4 text-base text-[#68706A] text-center">
+                        {new Date(payment.createdAt).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>
