@@ -113,7 +113,7 @@ export function EarningsChart() {
               tickLine={false}
               tick={{ fill: "#6b7280", fontSize: 12 }}
               tickFormatter={(value) => `$${value}`}
-              ticks={[500, 1000, 1500, 2000, 2500]}
+              ticks={[500, 1000, 1500, 2000, 2500, 3000]}
             />
             <Tooltip
               content={({ active, payload }) => {
