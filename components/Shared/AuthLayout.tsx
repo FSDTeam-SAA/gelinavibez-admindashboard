@@ -1,7 +1,8 @@
 import type React from "react"
 import Link from "next/link"
 import Image from "next/image"
-
+import logo from "../../public/assets/logo.png"
+import bg from "../../public/assets/authbg2.jpg"
 interface AuthLayoutProps {
   children: React.ReactNode
 }
@@ -12,7 +13,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
       {/* Left side - Image with overlay */}
       <div className="hidden lg:block lg:w-1/2 relative">
         <Image
-          src="/assets/authbg2.jpg"
+          src={bg}
           alt="Interior design"
           fill
           className="object-cover"
@@ -33,7 +34,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           <div className="text-white">
             <div className="flex items-center gap-2"></div>
             <div className="text-xs ml-14 -mt-3">
-              <Image src="/assets/logo.png" alt="Logo" width={100} height={100} />
+              <Image src={logo} alt="Logo" width={100} height={100} />
             </div>
           </div>
         </div>

@@ -8,6 +8,7 @@ import { Header } from "@/components/Shared/Header"
 import { CustomPagination } from "@/components/Shared/CustomePaginaion"
 import { useGetContact } from "@/hooks/ApiClling"
 import { useSession } from "next-auth/react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 
 export default function ContactsPage() {
@@ -29,7 +30,42 @@ export default function ContactsPage() {
   }
 
   if (isLoading) {
-    return <div className="p-10 text-center text-lg">Loading...</div>
+    return <div className="overflow-x-auto rounded-lg border border-[#E6E7E6] mt-6">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-[#E6E7E6] bg-[#E7ECEF]">
+            <th className="px-6 py-4 text-left text-base font-semibold text-[#343A40]">Name</th>
+            <th className="px-6 py-4 text-left text-base font-semibold text-[#343A40]">Phone Number</th>
+            <th className="px-6 py-4 text-left text-base font-semibold text-[#343A40]">Messages</th>
+            <th className="px-6 py-4 text-left text-base font-semibold text-[#343A40]">Date</th>
+            <th className="px-6 py-4 text-left text-base font-semibold text-[#343A40]">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <tr key={i} className="border-b border-[#E6E7E6]">
+              <td className="px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-4 w-32 rounded" />
+                </div>
+              </td>
+              <td className="px-6 py-4">
+                <Skeleton className="h-4 w-24 rounded" />
+              </td>
+              <td className="px-6 py-4">
+                <Skeleton className="h-4 w-40 rounded" />
+              </td>
+              <td className="px-6 py-4">
+                <Skeleton className="h-4 w-20 rounded" />
+              </td>
+              <td className="px-6 py-4">
+                <Skeleton className="h-10 w-24 rounded-md" />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   }
 
   return (

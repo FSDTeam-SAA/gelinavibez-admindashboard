@@ -23,7 +23,6 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
-  // ✅ Show NextAuth error (like non-admin user)
   useEffect(() => {
     if (error === "CredentialsSignin") {
       toast.error("Invalid credentials or access denied (Admins only) ❌");
@@ -63,7 +62,6 @@ export default function LoginForm() {
       });
 
       if (res?.error) {
-        // ❌ Handle wrong credentials or non-admin user
         if (res.error.includes("admin")) {
           toast.error("Only admin users can log in ❌");
         } else {
@@ -73,7 +71,6 @@ export default function LoginForm() {
         return;
       }
 
-      // ✅ Remember me
       if (rememberMe) {
         localStorage.setItem("savedEmail", email);
         localStorage.setItem("savedPassword", password);
