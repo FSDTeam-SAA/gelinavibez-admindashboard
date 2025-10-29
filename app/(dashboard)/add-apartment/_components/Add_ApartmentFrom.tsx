@@ -281,7 +281,7 @@ const AddApartment: React.FC = () => {
                   <div>
                     <label className="block text-base font-medium text-[#000000] mb-2">Price</label>
                     <Input
-                      type="text"
+                         type="number"
                       name="price"
                       value={formData.price}
                       onChange={handleInputChange}
@@ -295,7 +295,7 @@ const AddApartment: React.FC = () => {
                   <div>
                     <label className="block text-base font-medium text-[#000000] mb-2">Bedrooms</label>
                     <Input
-                      type="text"
+                 type="number"
                       name="bedrooms"
                       value={formData.bedrooms}
                       onChange={handleInputChange}
@@ -309,7 +309,7 @@ const AddApartment: React.FC = () => {
                   <div>
                     <label className="block text-base font-medium text-[#000000] mb-2">Bathrooms</label>
                     <Input
-                      type="text"
+                    type="number"
                       name="bathrooms"
                       value={formData.bathrooms}
                       onChange={handleInputChange}
@@ -323,7 +323,7 @@ const AddApartment: React.FC = () => {
                   <div>
                     <label className="block text-base font-medium text-[#000000] mb-2">Square Feet</label>
                     <Input
-                      type="text"
+                      type="number"
                       name="squareFeet"
                       value={formData.squareFeet}
                       onChange={handleInputChange}

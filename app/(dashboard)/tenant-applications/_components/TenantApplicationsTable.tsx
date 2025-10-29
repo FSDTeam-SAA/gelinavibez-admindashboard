@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState } from "react"
-import { Eye, Trash2 } from "lucide-react"
+import { Eye } from "lucide-react"
 import { PersonalDetailsModal } from "./PersonalDetailsModal"
 import { CustomPagination } from "@/components/Shared/CustomePaginaion"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -218,10 +218,10 @@ export function TenantApplicationsTable() {
     setIsPersonalDetailsModalOpen(true)
   }
 
-  const handleOpenDeleteModal = (id: string) => {
-    setSelectedId(id)
-    setIsDeleteModalOpen(true)
-  }
+  // const handleOpenDeleteModal = (id: string) => {
+  //   setSelectedId(id)
+  //   setIsDeleteModalOpen(true)
+  // }
 
   // Status change logic
   const handleStatusChange = (newStatus: "approved" | "denied" | "pending", id: string, currentStatus: string) => {
@@ -312,7 +312,7 @@ export function TenantApplicationsTable() {
                           // eslint-disable-next-line 
                           handleStatusChange(newStatus as any, application._id, application.status)
                         }
-                        disabled={isPending || application.status === "denied"}
+                        disabled={isPending || application.status === "denied" || application.status === "approved"}
                       >
                         <SelectTrigger className={getStatusColor(displayStatus)}>
                           <SelectValue />
@@ -340,13 +340,13 @@ export function TenantApplicationsTable() {
                         >
                           <Eye className="w-5 h-5" />
                         </button>
-                        <button
+                        {/* <button
                           onClick={() => handleOpenDeleteModal(application._id)}
                           disabled={isPending}
                           className="hover:text-red-600 transition"
                         >
                           <Trash2 className="w-5 h-5" />
-                        </button>
+                        </button> */}
                       </div>
                     </td>
                   </tr>

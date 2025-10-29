@@ -107,8 +107,7 @@ export function RecentCustomers() {
               <MapPin className="h-3 w-3 text-[#68706A]" />
               <span className="truncate max-w-[150px] text-[#68706A]">{customer.phone || "N/A"}</span>
             </div>
-            <div className="text-sm font-medium text-[#68706A]">N/A</div>
-            <div className="text-sm text-[#68706A] font-normal">N/A</div>
+
             {/* <Button variant="ghost" size="icon" className="h-8 w-8">
               <Eye className="h-5 w-5 text-[#68706A]" />
             </Button> */}

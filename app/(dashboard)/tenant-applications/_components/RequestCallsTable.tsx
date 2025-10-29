@@ -99,7 +99,7 @@ export function RequestCallsTable() {
   );
 
   return (
-    <div className="px-5">
+    <div className="">
       {/* ---------- Table ---------- */}
       <div className="overflow-x-auto">
         <table className="w-full border">
