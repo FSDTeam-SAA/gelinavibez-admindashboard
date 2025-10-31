@@ -1,5 +1,17 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { AuthOptions } from "next-auth";
+export interface LoginResponse {
+  data: {
+    accessToken: string;
+    refreshToken: string;
+    email: string;
+    role: string;
+    userId: string;
+    user: {
+      role: string;
+    };
+  };
+}
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -9,68 +21,55 @@ export const authOptions: AuthOptions = {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
-   async authorize(credentials) {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: credentials?.email,
-        password: credentials?.password,
-      }),
-    });
+      async authorize(credentials) {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: credentials?.email,
+            password: credentials?.password,
+          }),
+        });
 
-    const data = await res.json();
+        const data: LoginResponse = await res.json();
 
-    // ✅ Expecting data in the shape of your provided example
-    if (res.ok && data?.data?.accessToken) {
-      return {
-        id: data.data.userId, 
-        accessToken: data.data.accessToken,
-        refreshToken: data.data.refreshToken,
-        email: data.data.email,
-        message: data.message,
-        success: data.success,
-        statusCode: data.statusCode,
-      };
-    }
+        if (!res.ok || !data?.data?.accessToken) return null;
 
-    return null;
-  } catch (error) {
-    console.error("Fetch login error:", error);
-    return null;
-  }
-}
+        if (data.data.user.role !== "admin") {
+          throw new Error("admin_only");
+        }
+
+        return {
+          id: data.data.userId,
+          accessToken: data.data.accessToken,
+          refreshToken: data.data.refreshToken,
+          email: data.data.email,
+          role: data.data.role,
+        };
+      },
     }),
   ],
 
   callbacks: {
     async jwt({ token, user }) {
-      // Store user info in token
       if (user) {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
-        token.userId = user.userId;
+        token.userId = user.id;
         token.email = user.email;
-        token.message = user.message;
-        token.success = user.success;
-        token.statusCode = user.statusCode;
+        token.role = user.role;
       }
       return token;
     },
 
     async session({ session, token }) {
-      // Make session include full response
       session.user = {
         userId: token.userId,
         email: token.email,
+        role: token.role,
       };
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
-      session.message = token.message;
-      session.success = token.success;
-      session.statusCode = token.statusCode;
-
       return session;
     },
   },
