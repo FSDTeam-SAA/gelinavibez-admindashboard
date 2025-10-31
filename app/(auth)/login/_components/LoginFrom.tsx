@@ -60,7 +60,7 @@ export default function LoginForm() {
         password,
         callbackUrl: "/", // redirect after successful login
       });
-
+ 
       if (res?.error) {
         if (res.error.includes("admin")) {
           toast.error("Only admin users can log in ❌");
