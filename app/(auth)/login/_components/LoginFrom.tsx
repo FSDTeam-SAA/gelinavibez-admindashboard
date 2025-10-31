@@ -58,11 +58,11 @@ export default function LoginForm() {
         redirect: false, // manual redirect control
         email,
         password,
-        callbackUrl: "/", // redirect after successful login
+        callbackUrl: "/", 
       });
 
       if (res?.error) {
-        if (res.error.includes("admin")) {
+        if (res.error.includes("admin_only")) {
           toast.error("Only admin users can log in ❌");
         } else {
           toast.error("Invalid email or password ❌");
