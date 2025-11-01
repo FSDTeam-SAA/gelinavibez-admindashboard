@@ -60,12 +60,12 @@ export default function LoginForm() {
         password,
         callbackUrl: "/", 
       });
-
+ 
       if (res?.error) {
         if (res.error.includes("admin_only")) {
-          toast.error("Only admin users can log in ❌");
+          toast.error("Only admin users can login ");
         } else {
-          toast.error("Invalid email or password ❌");
+          toast.error("Invalid email or password ");
         }
         setLoading(false);
         return;
