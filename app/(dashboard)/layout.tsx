@@ -18,6 +18,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div className="w-full ">
         {/* <Header onMenuClick={handleMenuToggle} /> */}
         <main className="">
+          
           {children}</main>
       </div>
     </div>
