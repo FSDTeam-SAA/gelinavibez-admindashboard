@@ -255,7 +255,13 @@ const adminAllowedRoutes = [
   "/tenant-applications",
   "/extermination-applications",
   "/apartment-listings",
-  "/newsletter",
+  '/contactors',
+  "/settings",
+  "/contacts",
+  "/bookings",
+  "/services",
+  "/contactors",
+  "/payments",
 ];
 
 interface SidebarProps {

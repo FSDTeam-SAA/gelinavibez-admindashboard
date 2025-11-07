@@ -84,7 +84,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (userRole === "admin") {
-    const adminBlockedRoutes = ["/contactors"]
+    const adminBlockedRoutes = ["/newsletter", "/admin-request"]
 
     const isBlocked = adminBlockedRoutes.some((route) => pathname.startsWith(route))
 
