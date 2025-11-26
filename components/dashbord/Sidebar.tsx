@@ -33,11 +33,13 @@ const allNavigation = [
   { name: "Contactors", href: "/contactors", icon: ContactRound },
   { name: "Services", href: "/services", icon: BrickWallShield },
   { name: "Bookings", href: "/bookings", icon: BrickWallShield },
+  { name: "Contactors Payments Request", href: "/contactors-payments", icon: CreditCard },
   { name: "Payments", href: "/payments", icon: CreditCard },
   { name: "Contacts", href: "/contacts", icon: Users },
   { name: "News Letter", href: "/newsletter", icon: Users },
   { name: "Admin Request", href: "/admin-request", icon: Users },
   { name: "Settings", href: "/settings", icon: Settings },
+  
 ];
 
 interface SidebarProps {
