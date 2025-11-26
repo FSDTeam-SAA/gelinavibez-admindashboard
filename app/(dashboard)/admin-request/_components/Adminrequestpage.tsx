@@ -52,7 +52,9 @@ const AVAILABLE_ROUTES: RouteOption[] = [
   { value: "payments", label: "Payments" },
   { value: "contacts", label: "Contacts" },
   { value: "newsletter", label: "Newsletter" },
-  { value: "admin-request", label: "Admin Request" },
+  // { value: "admin-request", label: "Admin Request" },
+  { value: "contactors-payments", label: "Contactors Payments Request" },
+
 ]
 
 /* ───────────── HELPERS ───────────── */
