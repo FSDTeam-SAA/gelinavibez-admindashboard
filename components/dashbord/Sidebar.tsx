@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   LayoutDashboard,
+  MessageCircleMore ,
   FileText,
   Home,
   Award,
@@ -38,6 +39,7 @@ const allNavigation = [
   { name: "Contacts", href: "/contacts", icon: Users },
   { name: "News Letter", href: "/newsletter", icon: Users },
   { name: "Admin Request", href: "/admin-request", icon: Users },
+   {name: "Message",href:"/message",icon:MessageCircleMore },
   { name: "Settings", href: "/settings", icon: Settings },
   
 ];
