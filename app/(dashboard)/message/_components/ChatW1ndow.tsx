@@ -46,11 +46,13 @@ interface Props {
 export default function ChatWindow({
   conversationId,
   receiverId,
+  isMonitoring ,
   onBack,
 }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  console.log(isMonitoring)
 
   const { data: session } = useSession();
   const token = session?.accessToken as string | undefined;
@@ -227,7 +229,10 @@ export default function ChatWindow({
       </div>
 
       {/* ================= INPUT ================= */}
+      
       <div className="bg-white border-t p-4">
+        {isMonitoring === true ? null : (
+
         <div className="flex items-center gap-3">
           <input
             value={input}
@@ -245,6 +250,7 @@ export default function ChatWindow({
             <Send className="w-5 h-5" />
           </button>
         </div>
+        )}
       </div>
     </div>
   );
