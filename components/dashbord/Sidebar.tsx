@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useAddPrice, useGetPrice } from "@/hooks/ApiClling";
+import image from "../../public/assets/logo.png";
 
 const allNavigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -223,7 +224,7 @@ export function Sidebar({ isMobileMenuOpen = false, onClose }: SidebarProps) {
       <aside className="hidden lg:flex lg:flex-col lg:w-[386px] bg-[#EFEFEF] border-r-[2px] border-[#B3BEC8]">
         <div className="flex items-center justify-center h-[90px] w-[120px] pl-5">
           <Image
-            src="/assets/logo.png"
+            src={image}
             width={1000}
             height={1000}
             alt="logo"
