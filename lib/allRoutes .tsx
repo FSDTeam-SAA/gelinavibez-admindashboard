@@ -10,4 +10,5 @@ export const allRoutes = [
   { value: "contacts", label: "Contacts" },
   { value: "newsletter", label: "Newsletter" },
   { value: "admin-request", label: "Admin Request" },
+  { value: "message", label: "Message" },
 ];

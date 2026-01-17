@@ -7,6 +7,7 @@ import {
   Settings,
   LogOut,
   LayoutDashboard,
+  MessageCircleMore ,
   FileText,
   Home,
   Award,
@@ -24,6 +25,7 @@ import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useAddPrice, useGetPrice } from "@/hooks/ApiClling";
+import image from "../../public/assets/logo.png";
 
 const allNavigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -42,6 +44,7 @@ const allNavigation = [
   { name: "Landlord Request", href: "/landlord-applications", icon: School  },
   { name: "Broker Request", href: "/broker-applications", icon: Antenna  },
   { name: "Admin Trakar", href: "/admin-traking", icon: Users },
+   {name: "Message",href:"/message",icon:MessageCircleMore },
   { name: "Settings", href: "/settings", icon: Settings },
   
 ];
@@ -225,7 +228,7 @@ export function Sidebar({ isMobileMenuOpen = false, onClose }: SidebarProps) {
       <aside id="myScrollDiv" className="hidden lg:flex lg:flex-col lg:w-[386px] bg-[#EFEFEF] border-r-[2px] border-[#B3BEC8] h-screen overflow-auto">
         <div className="flex items-center justify-center h-[90px] w-[120px] pl-5">
           <Image
-            src="/assets/logo.png"
+            src={image}
             width={1000}
             height={1000}
             alt="logo"

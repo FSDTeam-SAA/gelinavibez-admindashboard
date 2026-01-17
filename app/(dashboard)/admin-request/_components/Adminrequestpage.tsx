@@ -54,6 +54,7 @@ const AVAILABLE_ROUTES: RouteOption[] = [
   { value: "newsletter", label: "Newsletter" },
   // { value: "admin-request", label: "Admin Request" },
   { value: "contactors-payments", label: "Contactors Payments Request" },
+  { value: "message", label: "Message" },
 
 ]
 
