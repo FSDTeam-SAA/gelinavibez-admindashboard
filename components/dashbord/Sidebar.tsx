@@ -19,7 +19,8 @@ import {
   Loader2,
   School ,
   Antenna ,
-  DollarSign ,
+  DollarSign, 
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
@@ -32,11 +33,14 @@ const allNavigation = [
   { name: "Tenant Applications Management", href: "/tenant-applications", icon: FileText },
   { name: "Extermination Applications", href: "/extermination-applications", icon: Award },
   { name: "Contractor Applications", href: "/contactors-applications", icon: Award },
+  { name: "Landlord Apartment Assgin", href: "/landlord-assign", icon: Award },
+  { name: "Broker Apartment Assgin", href: "/broker-assign", icon: User },  
   { name: "Apartment Listings Management", href: "/apartment-listings", icon: Home },
   { name: "All Users", href: "/contactors", icon: ContactRound },
   { name: "Services", href: "/services", icon: BrickWallShield },
   { name: "Bookings", href: "/bookings", icon: BrickWallShield },
   { name: "Contactors Payments Request", href: "/contactors-payments", icon: DollarSign  },
+  { name: "Extermination Payments Request", href: "/extermination-payments", icon: DollarSign  },
   { name: "Payments", href: "/payments", icon: CreditCard },
   { name: "Contacts", href: "/contacts", icon: Users },
   { name: "News Letter", href: "/newsletter", icon: Users },
