@@ -137,14 +137,14 @@ const BookingTable = () => {
                                     <tr key={booking._id} className="border-b border-[#E6E7E6]">
                                         <td className="px-6 py-4 flex items-center gap-3">
                                             <Avatar className="h-8 w-8">
-                                                <AvatarImage src={booking.createBy.profileImage || "/placeholder.svg"} />
-                                                <AvatarFallback>{booking.createBy.firstName.charAt(0)}</AvatarFallback>
+                                                <AvatarImage src={booking?.createBy?.profileImage || "/placeholder.svg"} />
+                                                <AvatarFallback>{booking?.createBy?.firstName?.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <span className="text-[#343A40] font-medium">
-                                                {booking.createBy.firstName} {booking.createBy.lastName}
+                                                {booking?.createBy?.firstName} {booking?.createBy?.lastName}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-[#68706A] text-sm">{booking.createBy.email}</td>
+                                        <td className="px-6 py-4 text-[#68706A] text-sm">{booking?.createBy?.email}</td>
                                         <td className="px-6 py-4 flex items-center gap-1 text-[#68706A] text-sm">
                                             <MapPin className="h-3 w-3" />
                                             <span className="truncate max-w-[200px]">{booking.appliedAddress.address}</span>
