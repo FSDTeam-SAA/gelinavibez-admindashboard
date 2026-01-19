@@ -41,22 +41,45 @@ interface RouteOption {
 }
 
 /* ───────────── AVAILABLE ROUTES ───────────── */
+// const AVAILABLE_ROUTES: RouteOption[] = [
+//   { value: "tenant-applications", label: "Tenant Applications" },
+//   { value: "extermination-applications", label: "Extermination Applications" },
+//   { value: "apartment-listings", label: "Apartment Listings" },
+//   { value: "add-apartment", label: "Add Apartment" },
+//   { value: "contactors", label: "Contactors" },
+//   { value: "services", label: "Services" },
+//   { value: "bookings", label: "Bookings" },
+//   { value: "payments", label: "Payments" },
+//   { value: "contacts", label: "Contacts" },
+//   { value: "newsletter", label: "Newsletter" },
+//   // { value: "admin-request", label: "Admin Request" },
+//   { value: "contactors-payments", label: "Contactors Payments Request" },
+//   { value: "message", label: "Message" },
+
+// ]
+
 const AVAILABLE_ROUTES: RouteOption[] = [
-  { value: "tenant-applications", label: "Tenant Applications" },
+  { value: "/", label: "Dashboard" },
+
+  { value: "tenant-applications", label: "Tenant Applications Management" },
   { value: "extermination-applications", label: "Extermination Applications" },
-  { value: "apartment-listings", label: "Apartment Listings" },
-  { value: "add-apartment", label: "Add Apartment" },
-  { value: "contactors", label: "Contactors" },
-  { value: "services", label: "Services" },
+  { value: "contactors-applications", label: "Contractor Applications" },
+  { value: "landlord-assign", label: "Landlord Apartment Assign" },
+  { value: "broker-assign", label: "Broker Apartment Assign" },
+  { value: "apartment-listings", label: "Apartment Listings Management" },
+  { value: "contactors", label: "All Users" },
+  { value: "services", label: "Contractor Services" },
   { value: "bookings", label: "Bookings" },
-  { value: "payments", label: "Payments" },
+  { value: "contactors-payments", label: "Contractors Payments Request" },
+  { value: "extermination-payments", label: "Extermination Payments Request" },
   { value: "contacts", label: "Contacts" },
-  { value: "newsletter", label: "Newsletter" },
-  // { value: "admin-request", label: "Admin Request" },
-  { value: "contactors-payments", label: "Contactors Payments Request" },
+  { value: "newsletter", label: "News Letter" },
+  { value: "landlord-applications", label: "Landlord Request" },
+  { value: "broker-applications", label: "Broker Request" },
   { value: "message", label: "Message" },
 
-]
+];
+
 
 /* ───────────── HELPERS ───────────── */
 const getRoleBadgeColor = (role: string) => {

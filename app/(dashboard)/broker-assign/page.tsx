@@ -1,24 +1,22 @@
+/*eslint-disable */
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { Header } from '@/components/Shared/Header';
+import Bradecumb from '@/components/Shared/Bradecumb';
 
-// Types (you can move to separate file)
+// ── Types ───────────────────────────────────────────────
 interface Apartment {
   _id: string;
   title: string;
   price: number;
   bedrooms: number;
   bathrooms: number;
-  squareFeet: number;
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-  };
-  images: string[];
-  assasintBrokerId: string[];
+  address: { city: string; state: string; [key: string]: any };
+  assasintBrokerId: string[]; 
 }
 
 interface Broker {
@@ -26,133 +24,161 @@ interface Broker {
   firstName: string;
   lastName: string;
   email: string;
-  profileImage?: string;
 }
 
 interface ApiResponse<T> {
   success: boolean;
   data: T;
-  meta?: any;
 }
 
+// ── API Helpers ─────────────────────────────────────────
+const api = {
+  getApartments: async (token: string): Promise<Apartment[]> => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/apartment/`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+    if (!res.ok) throw new Error('Failed to fetch apartments');
+    const json: ApiResponse<{ data: Apartment[] }> = await res.json();
+    return json.data?.data || json.data || [];
+  },
+
+  getBrokers: async (token: string): Promise<Broker[]> => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/all-user?role=broker`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+    if (!res.ok) throw new Error('Failed to fetch brokers');
+    const json: ApiResponse<Broker[]> = await res.json();
+    return json.data || [];
+  },
+
+  assignBroker: async ({
+    token,
+    apartmentId,
+    brokerId,
+  }: {
+    token: string;
+    apartmentId: string;
+    brokerId: string;
+  }) => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/apartment/${apartmentId}/assasint-broker/${brokerId}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to assign broker');
+    }
+
+    return { apartmentId, brokerId };
+  },
+};
+
+// ── Main Component ──────────────────────────────────────
 export default function ApartmentsPage() {
   const { data: session, status } = useSession();
   const token = session?.accessToken as string | undefined;
+  const queryClient = useQueryClient();
 
-  const [apartments, setApartments] = useState<Apartment[]>([]);
-  const [brokers, setBrokers] = useState<Broker[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Modal state
   const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
   const [selectedBroker, setSelectedBroker] = useState<Broker | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [assigning, setAssigning] = useState(false);
 
-  // Fetch data
-  useEffect(() => {
-    if (status !== 'authenticated' || !token) return;
+  // ── Queries ─────────────────────────────────────────────
+  const apartmentsQuery = useQuery({
+    queryKey: ['apartments'],
+    queryFn: () => api.getApartments(token!),
+    enabled: status === 'authenticated' && !!token,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
+  const brokersQuery = useQuery({
+    queryKey: ['brokers'],
+    queryFn: () => api.getBrokers(token!),
+    enabled: status === 'authenticated' && !!token,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
 
-      try {
-        // Fetch apartments
-        const aptRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/apartment/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          cache: 'no-store',
-        });
+  // ── Mutation ────────────────────────────────────────────
+  const assignMutation = useMutation({
+    mutationFn: api.assignBroker,
+    onMutate: async ({ apartmentId, brokerId }) => {
+      // Optimistic update
+      await queryClient.cancelQueries({ queryKey: ['apartments'] });
 
-        if (!aptRes.ok) throw new Error('Failed to fetch apartments');
+      const previousApartments = queryClient.getQueryData<Apartment[]>(['apartments']);
 
-        const aptData: ApiResponse<{ data: Apartment[] }> = await aptRes.json();
-        setApartments(aptData.data?.data || []);
+      queryClient.setQueryData<Apartment[]>(['apartments'], (old = []) =>
+        old.map((apt) =>
+          apt._id === apartmentId ? { ...apt, assasintBrokerId: [brokerId] } : apt
+        )
+      );
 
-        // Fetch brokers
-        const brokerRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/all-user?role=broker`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          cache: 'no-store',
-        });
+      return { previousApartments }; // for rollback
+    },
+    onError: (err, _, context) => {
+      queryClient.setQueryData(['apartments'], context?.previousApartments);
+      toast.error(err instanceof Error ? err.message : 'Failed to assign broker');
+    },
+    onSuccess: () => {
+      toast.success('Broker assigned successfully!');
+      setShowConfirmModal(false);
+      // Optional: invalidate if you want to refetch from server
+      // queryClient.invalidateQueries({ queryKey: ['apartments'] });
+    },
+  });
 
-        if (!brokerRes.ok) throw new Error('Failed to fetch brokers');
+  // ── Handlers ────────────────────────────────────────────
+  const handleBrokerSelect = (apartment: Apartment, brokerId: string) => {
+    if (!brokerId) return;
 
-        const brokerData: ApiResponse<Broker[]> = await brokerRes.json();
-        setBrokers(brokerData.data || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Something went wrong');
-      } finally {
-        setLoading(false);
-      }
-    };
+    const broker = brokersQuery.data?.find((b) => b._id === brokerId);
+    if (!broker) return;
 
-    fetchData();
-  }, [status, token]);
+    const current = apartment.assasintBrokerId?.[0];
+    if (current === brokerId) {
+      toast.info('This broker is already assigned');
+      return;
+    }
 
-  // Handle broker selection
-  const handleBrokerClick = (apartment: Apartment, broker: Broker) => {
     setSelectedApartment(apartment);
     setSelectedBroker(broker);
     setShowConfirmModal(true);
   };
 
-  // Confirm assignment
-  const confirmAssign = async () => {
+  const confirmAssign = () => {
     if (!selectedApartment || !selectedBroker || !token) return;
 
-    setAssigning(true);
-
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/apartment/${selectedApartment._id}/assasint-broker/${selectedBroker._id}`,
-        {
-          method: 'PUT', 
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to assign broker');
-      }
-
-      // Update local state (optimistic update)
-      setApartments((prev) =>
-        prev.map((apt) =>
-          apt._id === selectedApartment._id
-            ? { ...apt, assasintBrokerId: [...apt.assasintBrokerId, selectedBroker._id] }
-            : apt
-        )
-      );
-
-      alert('Broker assigned successfully!');
-      setShowConfirmModal(false);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to assign broker');
-    } finally {
-      setAssigning(false);
-    }
+    assignMutation.mutate({
+      token,
+      apartmentId: selectedApartment._id,
+      brokerId: selectedBroker._id,
+    });
   };
 
-  if (status === 'loading' || loading) {
+  // ── Render States ───────────────────────────────────────
+  if (status === 'loading' || apartmentsQuery.isLoading || brokersQuery.isLoading) {
     return <SkeletonTable />;
   }
 
-  if (error) {
+  if (apartmentsQuery.isError || brokersQuery.isError) {
     return (
       <div className="p-6 text-red-600">
-        Error: {error}
+        Error loading data. Please try again.
         <button
-          onClick={() => window.location.reload()}
-          className="ml-4 px-4 py-2 bg-red-600 text-white rounded"
+          onClick={() => {
+            apartmentsQuery.refetch();
+            brokersQuery.refetch();
+          }}
+          className="ml-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
         >
           Retry
         </button>
@@ -160,12 +186,16 @@ export default function ApartmentsPage() {
     );
   }
 
+  const apartments = apartmentsQuery.data ?? [];
+  const brokers = brokersQuery.data ?? [];
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Available Apartments</h1>
+      <Header tittle="Broker Assignment" />
+      <Bradecumb pageName="Broker Assignment"  />
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200">
+      <div className="overflow-x-auto mt-10">
+        <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
           <thead className="bg-gray-100">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -181,80 +211,98 @@ export default function ApartmentsPage() {
                 Location
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Assign Broker
+                Assigned Broker
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {apartments.map((apt) => (
-              <tr key={apt._id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{apt.title}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">${apt.price}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+            {apartments.map((apt) => {
+              const currentBrokerId = apt.assasintBrokerId?.[0] || '';
+              const assignedBroker = brokers.find((b) => b._id === currentBrokerId);
+
+              return (
+                <tr key={apt._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap font-medium">{apt.title}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">${apt.price.toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     {apt.bedrooms}b / {apt.bathrooms}b
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">
+                  </td>
+                  <td className="px-6 py-4">
                     {apt.address.city}, {apt.address.state}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-wrap gap-2">
-                    {brokers.map((broker) => (
-                      <button
-                        key={broker._id}
-                        onClick={() => handleBrokerClick(apt, broker)}
-                        className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                          apt.assasintBrokerId?.includes(broker._id)
-                            ? 'bg-green-100 text-green-800 border border-green-300'
-                            : 'bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800'
-                        }`}
-                        title={broker.email}
-                      >
-                        {broker.firstName} {broker.lastName.charAt(0)}.
-                      </button>
-                    ))}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-6 py-4">
+                    <select
+                      onChange={(e) => handleBrokerSelect(apt, e.target.value)}
+                      value={currentBrokerId}
+                      className="block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-1.5"
+                    >
+                      <option value="">Select broker...</option>
+                      {brokers.map((broker) => (
+                        <option key={broker._id} value={broker._id}>
+                          {broker.firstName} {broker.lastName}
+                          {currentBrokerId === broker._id ? ' ✓' : ''}
+                        </option>
+                      ))}
+                    </select>
+
+                    {assignedBroker && (
+                      <div className="mt-1 text-xs text-green-700">
+                        Current: {assignedBroker.firstName} {assignedBroker.lastName}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
       {/* Confirmation Modal */}
       {showConfirmModal && selectedApartment && selectedBroker && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full">
             <h2 className="text-xl font-bold mb-4">Confirm Assignment</h2>
-            <p className="mb-6">
-              Are you sure you want to assign{' '}
-              <strong>
-                {selectedBroker.firstName} {selectedBroker.lastName}
-              </strong>{' '}
-              to apartment{' '}
-              <strong>"{selectedApartment.title}"</strong>?
-            </p>
+
+            {selectedApartment.assasintBrokerId?.length > 0 ? (
+              <p className="mb-6">
+                Replace current broker with{' '}
+                <strong>
+                  {selectedBroker.firstName} {selectedBroker.lastName}
+                </strong>{' '}
+                for <strong>&quot;{selectedApartment.title}&quot;</strong>?
+              </p>
+            ) : (
+              <p className="mb-6">
+                Assign{' '}
+                <strong>
+                  {selectedBroker.firstName} {selectedBroker.lastName}
+                </strong>{' '}
+                to <strong>&quot;{selectedApartment.title}&quot;</strong>?
+              </p>
+            )}
+
             <div className="flex justify-end gap-4">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 border rounded hover:bg-gray-100"
-                disabled={assigning}
+                disabled={assignMutation.isPending}
+                className="px-5 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmAssign}
-                disabled={assigning}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-400 flex items-center gap-2"
+                disabled={assignMutation.isPending}
+                className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 flex items-center gap-2 min-w-[120px] justify-center"
               >
-                {assigning ? 'Assigning...' : 'Confirm Assign'}
+                {assignMutation.isPending ? (
+                  <>
+                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                    Assigning...
+                  </>
+                ) : (
+                  'Confirm'
+                )}
               </button>
             </div>
           </div>
@@ -264,7 +312,7 @@ export default function ApartmentsPage() {
   );
 }
 
-// Simple skeleton loader
+// Skeleton (unchanged)
 function SkeletonTable() {
   return (
     <div className="p-6 animate-pulse">
@@ -281,11 +329,11 @@ function SkeletonTable() {
             </tr>
           </thead>
           <tbody>
-            {[...Array(8)].map((_, i) => (
+            {[...Array(6)].map((_, i) => (
               <tr key={i}>
                 {[...Array(5)].map((_, j) => (
                   <td key={j} className="px-6 py-4">
-                    <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                    <div className="h-4 w-40 bg-gray-200 rounded"></div>
                   </td>
                 ))}
               </tr>

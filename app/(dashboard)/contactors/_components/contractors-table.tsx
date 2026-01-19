@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { Eye } from 'lucide-react'
 import { CustomPagination } from '@/components/Shared/CustomePaginaion'
+import Image from 'next/image'
 
 
 
@@ -132,7 +133,7 @@ const UserManagementTable: React.FC = () => {
               usersData?.data.map((user) => (
                 <tr key={user._id} className="hover:bg-blue-50/40 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <img src={user.profileImage} alt="avatar" className="w-10 h-10 rounded-full object-cover border" />
+                    <Image src={user.profileImage} alt="avatar" width={100} height={100} className="w-10 h-10 rounded-full object-cover border" />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
                     {user.firstName} {user.lastName}
@@ -207,7 +208,7 @@ const DetailsModal: React.FC<{ isOpen: boolean; onClose: () => void; user?: User
           </div>
         ) : (
           <div className="text-center">
-            <img src={user?.profileImage} className="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-blue-100" alt="Profile" />
+            <Image src={user?.profileImage || '/default-avatar.png'} width={100} height={100} className="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-blue-100" alt="Profile" />
             <p className="text-xl font-bold text-gray-900">{user?.firstName} {user?.lastName}</p>
             <p className="text-gray-500 mb-6">{user?.email}</p>
             <div className="text-left space-y-3 bg-gray-50 p-4 rounded-xl">

@@ -37,7 +37,7 @@ const allNavigation = [
   { name: "Broker Apartment Assgin", href: "/broker-assign", icon: User },  
   { name: "Apartment Listings Management", href: "/apartment-listings", icon: Home },
   { name: "All Users", href: "/contactors", icon: ContactRound },
-  { name: "Services", href: "/services", icon: BrickWallShield },
+  { name: "Contactor Services", href: "/services", icon: BrickWallShield },
   { name: "Bookings", href: "/bookings", icon: BrickWallShield },
   { name: "Contactors Payments Request", href: "/contactors-payments", icon: DollarSign  },
   { name: "Extermination Payments Request", href: "/extermination-payments", icon: DollarSign  },
@@ -49,6 +49,8 @@ const allNavigation = [
   { name: "Broker Request", href: "/broker-applications", icon: Antenna  },
   { name: "Admin Trakar", href: "/admin-traking", icon: Users },
    {name: "Message",href:"/message",icon:MessageCircleMore },
+   {name: "Message Request",href:"/message-request",icon:MessageCircleMore },
+   {name: "SubscribePlan",href:"/subscribe-plan",icon:MessageCircleMore },
   { name: "Settings", href: "/settings", icon: Settings },
   
 ];
@@ -92,18 +94,20 @@ export function Sidebar({ isMobileMenuOpen = false, onClose }: SidebarProps) {
   }, [token]);
 
   // Filter navigation based on role
-  const navigation = React.useMemo(() => {
-    if (userRole === "superadmin") return allNavigation;
-    if (userRole === "admin") {
-      // Include only routes that exist in accessRoutes
-      return allNavigation.filter(
-        (item) =>
-          item.href === "/" || // always allow dashboard
-          accessRoutes.includes(item.href.replace("/", "")) // match API route names
-      );
-    }
-    return [];
-  }, [userRole, accessRoutes]);
+ const navigation = React.useMemo(() => {
+  if (userRole === "superadmin") return allNavigation;
+
+  if (userRole === "admin") {
+    return allNavigation.filter(
+      (item) =>
+        item.href === "/" || 
+        item.href === "/settings" ||  
+        accessRoutes.includes(item.href.replace("/", ""))
+    );
+  }
+
+  return [];
+}, [userRole, accessRoutes]);
 
 
   useEffect(() => {

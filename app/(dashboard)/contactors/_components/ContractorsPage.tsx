@@ -1,12 +1,11 @@
 "use client";
-import { useState } from "react";
 // import { ContractorsTable } from "./contractors-table";
 import { Header } from "@/components/Shared/Header";
 import Bradecumb from "@/components/Shared/Bradecumb";
 import UserManagementTable from "./contractors-table";
 
 export function ContractorsPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   return (
     <div className="min-h-screen bg-background">
