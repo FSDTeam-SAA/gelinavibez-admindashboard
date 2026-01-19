@@ -31,3 +31,14 @@ h1 {
 h3 {
   font-family: var(--font-poppins);
 }
+
+/* Firefox */
+#myScrollDiv {
+  scrollbar-width: none;
+  -ms-overflow-style: none; /* IE & Edge */
+}
+
+/* Chrome, Safari, Edge */
+#myScrollDiv::-webkit-scrollbar {
+  display: none;
+}

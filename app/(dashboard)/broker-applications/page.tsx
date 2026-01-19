@@ -1,10 +1,10 @@
 import React from 'react'
-import ExterminationListPage from './_components/ExterminationPage'
+import Landlordpage from './_components/Brokerpage'
 
 const page = () => {
   return (
     <div>
-      <ExterminationListPage/>
+      <Landlordpage/>
     </div>
   )
 }

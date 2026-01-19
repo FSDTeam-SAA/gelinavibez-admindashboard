@@ -288,8 +288,8 @@ export function TenantApplicationsTable() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={application.createBy.profileImage || "/placeholder.svg"} />
-                          <AvatarFallback>{application.firstName.charAt(0)}</AvatarFallback>
+                          <AvatarImage src={application?.createBy?.profileImage || "/placeholder.svg"} />
+                          <AvatarFallback>{application?.firstName?.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="text-base font-semibold text-[#0F3D61]">

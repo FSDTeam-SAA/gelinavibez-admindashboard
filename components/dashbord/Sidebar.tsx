@@ -1,8 +1,5 @@
 
-
-
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -20,6 +17,10 @@ import {
   BrickWallShield,
   Tag,
   Loader2,
+  School ,
+  Antenna ,
+  DollarSign, 
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
@@ -31,16 +32,25 @@ const allNavigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Tenant Applications Management", href: "/tenant-applications", icon: FileText },
   { name: "Extermination Applications", href: "/extermination-applications", icon: Award },
+  { name: "Contractor Applications", href: "/contactors-applications", icon: Award },
+  { name: "Landlord Apartment Assgin", href: "/landlord-assign", icon: Award },
+  { name: "Broker Apartment Assgin", href: "/broker-assign", icon: User },  
   { name: "Apartment Listings Management", href: "/apartment-listings", icon: Home },
-  { name: "Contactors", href: "/contactors", icon: ContactRound },
-  { name: "Services", href: "/services", icon: BrickWallShield },
+  { name: "All Users", href: "/contactors", icon: ContactRound },
+  { name: "Contactor Services", href: "/services", icon: BrickWallShield },
   { name: "Bookings", href: "/bookings", icon: BrickWallShield },
-  { name: "Contactors Payments Request", href: "/contactors-payments", icon: CreditCard },
+  { name: "Contactors Payments Request", href: "/contactors-payments", icon: DollarSign  },
+  { name: "Extermination Payments Request", href: "/extermination-payments", icon: DollarSign  },
   { name: "Payments", href: "/payments", icon: CreditCard },
   { name: "Contacts", href: "/contacts", icon: Users },
   { name: "News Letter", href: "/newsletter", icon: Users },
   { name: "Admin Request", href: "/admin-request", icon: Users },
+  { name: "Landlord Request", href: "/landlord-applications", icon: School  },
+  { name: "Broker Request", href: "/broker-applications", icon: Antenna  },
+  { name: "Admin Trakar", href: "/admin-traking", icon: Users },
    {name: "Message",href:"/message",icon:MessageCircleMore },
+   {name: "Message Request",href:"/message-request",icon:MessageCircleMore },
+   {name: "SubscribePlan",href:"/subscribe-plan",icon:MessageCircleMore },
   { name: "Settings", href: "/settings", icon: Settings },
   
 ];
@@ -84,18 +94,20 @@ export function Sidebar({ isMobileMenuOpen = false, onClose }: SidebarProps) {
   }, [token]);
 
   // Filter navigation based on role
-  const navigation = React.useMemo(() => {
-    if (userRole === "superadmin") return allNavigation;
-    if (userRole === "admin") {
-      // Include only routes that exist in accessRoutes
-      return allNavigation.filter(
-        (item) =>
-          item.href === "/" || // always allow dashboard
-          accessRoutes.includes(item.href.replace("/", "")) // match API route names
-      );
-    }
-    return [];
-  }, [userRole, accessRoutes]);
+ const navigation = React.useMemo(() => {
+  if (userRole === "superadmin") return allNavigation;
+
+  if (userRole === "admin") {
+    return allNavigation.filter(
+      (item) =>
+        item.href === "/" || 
+        item.href === "/settings" ||  
+        accessRoutes.includes(item.href.replace("/", ""))
+    );
+  }
+
+  return [];
+}, [userRole, accessRoutes]);
 
 
   useEffect(() => {
@@ -221,7 +233,7 @@ export function Sidebar({ isMobileMenuOpen = false, onClose }: SidebarProps) {
       )}
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-[386px] bg-[#EFEFEF] border-r-[2px] border-[#B3BEC8]">
+      <aside id="myScrollDiv" className="hidden lg:flex lg:flex-col lg:w-[386px] bg-[#EFEFEF] border-r-[2px] border-[#B3BEC8] h-screen overflow-auto">
         <div className="flex items-center justify-center h-[90px] w-[120px] pl-5">
           <Image
             src={image}
