@@ -59,8 +59,6 @@ interface RouteOption {
 // ]
 
 const AVAILABLE_ROUTES: RouteOption[] = [
-  { value: "/", label: "Dashboard" },
-
   { value: "tenant-applications", label: "Tenant Applications Management" },
   { value: "extermination-applications", label: "Extermination Applications" },
   { value: "contactors-applications", label: "Contractor Applications" },
@@ -70,15 +68,19 @@ const AVAILABLE_ROUTES: RouteOption[] = [
   { value: "contactors", label: "All Users" },
   { value: "services", label: "Contractor Services" },
   { value: "bookings", label: "Bookings" },
-  { value: "contactors-payments", label: "Contractors Payments Request" },
+  { value: "contactors-payments", label: "Contractor Payments Request" },
   { value: "extermination-payments", label: "Extermination Payments Request" },
   { value: "contacts", label: "Contacts" },
-  { value: "newsletter", label: "News Letter" },
+  { value: "newsletter", label: "Newsletter" },
+  { value: "admin-request", label: "Admin Request" },
   { value: "landlord-applications", label: "Landlord Request" },
   { value: "broker-applications", label: "Broker Request" },
   { value: "message", label: "Message" },
-
+  { value: "message-request", label: "Message Request" },
+  { value: "subscribe-plan", label: "Subscribe Plan" },
+ 
 ];
+
 
 
 /* ───────────── HELPERS ───────────── */
