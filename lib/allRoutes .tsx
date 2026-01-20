@@ -41,5 +41,11 @@ export const allRoutes = [
   { value: "broker-applications", label: "Broker Request" },
 
   { value: "admin-request", label: "Admin Request" },
+  { value: "admin-traking", label: "Admin Tracker" },
+
   { value: "message", label: "Message" },
+  { value: "message-request", label: "Message Request" },
+
+  { value: "subscribe-plan", label: "Subscribe Plan" },
+
 ];
