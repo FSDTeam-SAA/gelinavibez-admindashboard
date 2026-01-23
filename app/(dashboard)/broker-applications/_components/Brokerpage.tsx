@@ -56,7 +56,7 @@ const Landlordpage: React.FC = () => {
   const { data, isLoading, isError, error } = useQuery<LandlordApiResponse, Error>({
     queryKey: ['unverified-landlords', token],
     queryFn: async () => {
-      const response = await fetch(`${baseUrl}/user/all-user?role=broker&verified=false`, {
+      const response = await fetch(`${baseUrl}/user/all-user?role=broker&approvedLandlordBrokerAdmin=pending`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
