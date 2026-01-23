@@ -59,7 +59,7 @@ export default function LandlordPage() {
     queryKey: ["unverified-landlords", token],
     queryFn: async () => {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/all-user?role=landlord&verified=false`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/all-user?role=landlord&approvedLandlordBrokerAdmin=pending`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
