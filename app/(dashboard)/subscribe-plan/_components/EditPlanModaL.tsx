@@ -1,56 +1,3 @@
-// 'use client'
-
-// import { useState } from 'react'
-// import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-// import { Button } from '@/components/ui/button'
-// import { Input } from '@/components/ui/input'
-// import { Textarea } from '@/components/ui/textarea'
-// import { SubscriptionPlan } from '../page'
-
-// export default function EditPlanModal({
-//   plan,
-//   onClose,
-//   onSave,
-// }: {
-//   plan: SubscriptionPlan
-//   onClose: () => void
-//   onSave: (data: { price: number; features: string }) => void
-// }) {
-//   const [price, setPrice] = useState(plan.price)
-//   const [features, setFeatures] = useState(plan.features)
-
-//   return (
-//     <Dialog open onOpenChange={onClose}>
-//       <DialogContent className="bg-[#0F3D61] text-white">
-//         <DialogHeader>
-//           <DialogTitle>Edit {plan.name}</DialogTitle>
-//         </DialogHeader>
-
-//         <Input
-//           type="number"
-//           value={price}
-//           onChange={e => setPrice(Number(e.target.value))}
-//           className="bg-white text-black"
-//         />
-
-//         <Textarea
-//           value={features}
-//           onChange={e => setFeatures(e.target.value)}
-//           className="bg-white text-black"
-//         />
-
-//         <Button
-//           onClick={() => onSave({ price, features })}
-//           className="bg-[#EFDACB] text-[#0F3D61] hover:bg-[#EFDACB]/90 rounded-[8px]"
-//         >
-//           Save
-//         </Button>
-//       </DialogContent>
-//     </Dialog>
-//   )
-// }
-
-
 'use client'
 
 import { useState } from 'react'
@@ -270,3 +217,5 @@ export default function EditPlanModal({
     </Dialog>
   )
 }
+
+
